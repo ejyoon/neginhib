@@ -1,7 +1,7 @@
 <html>
   <head>
     <title>Which one is Elmo's?</title>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script> 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script> 
 
     <script src="spriteData.js"></script>
 
@@ -16,17 +16,17 @@
       <img src="images/stanford.png" alt="Stanford University">
         <p id='logo-text'>Stanford Language and Cognition Lab</p>
    
-        <p class="block-text">Welcome to the tablet study. Enter relevant information below:</p>
+        <p class="block-text"><center>Thanks for playing "finding things" game! <br><br>Enter relevant information below:</center></p>
 
-        <p class="block-text">
+        <p class="block-text"><center>
           subject ID: <br>
           <input type="text" id="subjectID" name="subjectID" size="30"> 
-        </p>
+        </center></p>
 
-        <p class="block-text">
+        <p class="block-text"><center> 
           list number: <br>
           <input type="text" id="order" name="order" size="30"> 
-        </p>
+        </center></p>
 
         <button type="button" id="beforeStudy" onClick="this.blur(); experiment.checkInput()">Start</button>
 
@@ -45,7 +45,7 @@
       <div id="objects"> </div> <!--dynamically built in javascript-->
 
       <audio id="sound_player">
-        <source src="simpimp_sprite.mp3" type="audio/mp3">
+        <source src="neginhib_sprite.mp3" type="audio/mp3">
       </audio>  
 
    </div>
@@ -59,7 +59,7 @@
     </div>
 
     
-    <script src="simpimpSC.js"></script>
+    <script src="neginhib_v1.js"></script>
     
   </body>
 </html>

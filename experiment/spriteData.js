@@ -1,5 +1,45 @@
 var spriteData = {
-	practice1_cow: {
+	cow: {
+		start: 6.450,
+		onset: 6.450,
+		length: 0.9
+	},
+	monkey: {
+		start: 15.811,
+		onset: 15.811,
+		length: 0.9
+	},
+	lion: {
+		start: 26.042,
+		onset: 26.042,
+		length: 0.9
+	},
+	rabbit: {
+		start: 35.313,
+		onset: 35.313,
+		length: 0.9
+	},
+	apple: {
+		start: 142.090,
+		onset: 142.090,
+		length: 1.2
+	},
+	orange: {
+		start: 150.191,
+		onset: 150.191,
+		length: 1.2
+	},
+	banana: {
+		start: 157.932,
+		onset: 157.932,
+		length: 1.2
+	},
+	carrot: {
+		start: 165.552,
+		onset: 165.552,
+		length: 1.2
+	},
+    practice1_cow: {
 		start: 0,
 		onset: 6.450,
 		length: 7.367
