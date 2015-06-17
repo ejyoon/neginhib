@@ -81,19 +81,35 @@ makeImageArray = function(order) {
 	return imageArray;
 }
 
-// FIXME: get trial type
+// get trial type
+// FIXME: add order randomizer here (by list) 
 getTrialType = function(counter) {
    	var trialtype;
    	if (counter === 1 || counter === 2) {
   		trialtype = "practice";
-    } else if (counter === 4 || counter === 7 || counter === 14 || counter === 17) {
-  		trialtype = "inference";
-   	} else if (counter === 5 || counter === 10 || counter === 11 || counter === 16) {
-   		trialtype = "control_double";
-   	} else {
-   		trialtype = "control_single";
-   	}
+    } else if (counter === 3 || counter === 4 || counter === 5) {
+  		trialtype = "control";
+   	} else if (counter === 6) {
+   		trialtype = "inhibition";
+   	} 
+    // FIXME: add other trial types
    	return trialtype;  
+}
+
+// get phase
+// FIXME: add order randomizer here (by list) 
+getPhase = function(counter) {
+   	var phase;
+   	if (counter === 1 || counter === 2) {
+  		phase = "practice";
+    } else if (counter === 3 || counter === 4 || counter === 5 || counter === 6) {
+  		phase = "inhibitionPhase";
+   	} else if (counter === 7 || counter === 8 || counter === 9 || counter === 10) {
+   		phase = "negationPhase";
+   	} else {
+   		phase = "implicaturePhase";
+   	}
+   	return phase;  
 }
 
 // dots for practice task
@@ -187,13 +203,13 @@ showSlide("instructions");
 
 // MAIN EXPERIMENT
 // FIXME: set up three phases (i) inhibition (ii) negation (iii) implicature, and randomize the presentation order of the phase 
+// or should these just be encoded in 'trialtype's?
 var experiment = {
 
 	subid: "",
 		//inputed at beginning of experiment
 	trialnum: 0,
 		//trial number
-	//FIXME: add phase variable  
 	order: 1,
 		//whether child received list 1 or list 2
 	word: "",
@@ -212,6 +228,8 @@ var experiment = {
 		//the name of the picture the child picked
 	response: "",
 		//whether the response was the correct response (Y) or the incorrect response (N)
+	phase: "",
+    //FIXME: phases: (i) inhibition (ii) negation (iii) implicature  
     trialtype: "",
         // FIXME: trialtype -- (i) inhibition phase: baseline vs. inhibitory (ii) negation phase: pos vs. neg (iii) implicature phase: control vs. inference
 	date: getCurrentDate(),
@@ -408,6 +426,7 @@ var experiment = {
 
 			//what kind of trial was this?
             experiment.trialtype = getTrialType(experiment.trialnum);
+            experiment.phase = getPhase(experiment.trialnum);
 
 			//Add one to the counter and process the data to be saved; the child completed another "round" of the experiment
 			experiment.processOneRow();
