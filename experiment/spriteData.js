@@ -1,33 +1,98 @@
 var spriteData = {
-	cow: {
+	cow_pos: {
 		start: 6.450,
 		onset: 6.450,
 		length: 0.9
 	},
-	monkey: {
+	monkey_pos: {
 		start: 15.811,
 		onset: 15.811,
 		length: 0.9
 	},
-	lion: {
+	lion_pos: {
 		start: 26.042,
 		onset: 26.042,
 		length: 0.9
 	},
-	rabbit: {
+	rabbit_pos: {
 		start: 35.313,
 		onset: 35.313,
 		length: 0.9
 	},
-	apple: {
+	apple_pos: {
 		start: 142.090,
 		onset: 142.090,
 		length: 1.2
 	},
-	orange: {
+	apple_neg: {
+		start: 142.090,
+		onset: 142.090,
+		length: 1.2
+	},
+	apple_inhib: {
 		start: 150.191,
 		onset: 150.191,
 		length: 1.2
+	},
+	apple_implic: {
+		start: 135.590,
+		onset: 142.090,
+		length: 8.011
+	},
+	apple_control: {
+		start: 135.590,
+		onset: 142.090,
+		length: 8.011
+	},
+	car_pos: {
+		start: 227.957,
+		onset: 227.957,
+		length: 1.00
+	},
+	car_neg: {
+		start: 227.957,
+		onset: 227.957,
+		length: 1.00
+	},
+	car_inhib: {
+		start: 220.216,
+		onset: 220.216,
+		length: 1.00
+	},
+	car_implic: {
+		start: 221.847,
+		onset: 227.957,
+		length: 7.620
+	},
+	car_control: {
+		start: 221.847,
+		onset: 227.957,
+		length: 7.620
+	},
+	dog_pos: {
+		start: 197.385,
+		onset: 197.385,
+		length: 1.00
+	},
+	dog_neg: {
+		start: 197.385,
+		onset: 197.385,
+		length: 1.00
+	},
+	dog_inhib: {
+		start: 189.434,
+		onset: 189.434,
+		length: 1.00
+	},
+	dog_implic: {
+		start: 190.914,
+		onset: 197.385,
+		length: 8.071
+	},
+	dog_control: {
+		start: 190.914,
+		onset: 197.385,
+		length: 8.071
 	},
 	banana: {
 		start: 157.932,
@@ -37,11 +102,6 @@ var spriteData = {
 	carrot: {
 		start: 165.552,
 		onset: 165.552,
-		length: 1.2
-	},
-	no_apple: {
-		start: 142.090,
-		onset: 142.090,
 		length: 1.2
 	},
 	no_orange: {
