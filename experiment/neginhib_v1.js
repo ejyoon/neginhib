@@ -1,7 +1,4 @@
-// Simple study demonstrating the use of a tablet-designed webpage. 
-// Study is designed using simple JS/HTML/CSS, with data saves to a server
-// controlled by call to a short php script. 
-
+// neginhib: study looking at children's inhibition and negation/implicature processing
 // Overview: (i) Parameters (ii) Helper Functions (iii) Control Flow
 
 // ---------------- PARAMETERS ------------------
@@ -9,6 +6,8 @@
 var trainingNum = 0;
 var gameCounter = 0;
 var numGames = 3;
+var reverse = 1;
+// var reverse = random(2); // pseudo-counterbalance which sides pictures appear on
 
 //Number of trials per game
 var numPracticeTrials = 2;
@@ -37,36 +36,6 @@ var handler;
 var practiceItems = shuffle(["lion", "rabbit"]);
 var items = shuffle(["apple", "apple", "car", "car", "dog", "dog"]);
 var allItems = practiceItems.concat(items);
-
-
-//CONTROL FLOW
-
-//PRELOAD ALL IMAGES//---------------------------
-// FIXME: create pictures of 'cat', 'dog', etc.
-// FIXME: new images
-//var allimages1 = ["practice1_cow", "practice1_lion", "practice2_rabbit", "practice2_monkey", "banana", "carrot", "carrot", "banana", "carrot", "banana", "banana", "carrot", "apple", "orange", "no_apple", "no_orange", "apple", "orange", "no_apple", "no_orange", "grover_car", "grover_bicycle", "ernie_apple", "ernie_orange", "bert_cat", "bert_dog", "bert_ball", "bert_truck"];
-
-//var allimages2 = ["practice1_cow", "practice1_lion", "practice2_rabbit", "practice2_monkey", "apple", "orange", "orange", "apple", "orange", "apple", "apple", "orange", "banana", "carrot", "no_banana", "no_carrot", "banana", "carrot", "no_banana", "no_carrot", "grover_ball2", "grover_truck2", "elmo_dog2", "elmo_cat2", "grover_car2", "grover_bicycle2", "grover_banana2", "grover_carrot2"];
-
-//FixME: Do preloading with new item names
-
-//for critical trials and fillers
-// var images = new Array();
-// for (i = 0; i < allimages1.length; i++) {
-// 	images[i] = new Image();
-// 	images[i].src = "neginhib_objects/" + allimages1[i] + ".png";
-// 	images[i] = new Image();
-// 	images[i].src = "neginhib_objects/" + allimages2[i] + ".png";
-// }
-
-// //for dot game
-// var dots = ["dot_1", "dot_2", "dot_3", "dot_4", "dot_5", "x", "dot_smiley"];
-// for (i = 0; i < dots.length; i++) {
-// 	images[i] = new Image();
-// 	images[i].src = "dots/" + dots[i] + ".jpg";
-// }
-
-//-----------------------------------------------
 
 
 showSlide("instructions");
@@ -179,76 +148,17 @@ var experiment = {
 			}
 		})
 	},
-	// training: function(dotgame) {
-	// 	var allDots = ["dot_1", "dot_2", "dot_3", "dot_4", "dot_5", 
-	// 					"dot_smiley1", "dot_smiley2", "dot_smiley3", 
-	// 					"dot_smiley4", "dot_smiley5"];
-	// 	var xcounter = 0;
-	// 	var dotCount = 5;
 
-	// 	//preload sound
-	// 	if (dotgame === 0) {
-	// 		audioSprite.play();
-	// 		audioSprite.pause();
-	// 	}
-
-	// 	var dotx = [];
-	// 	var doty = [];
-
-	// 	if (dotgame === 0) {
-	// 		for (i = 0; i < dotCount; i++) {
-	// 			createDot(dotx, doty, i, "");
-	// 		}
-	// 	} else {
-	// 		for (i = 0; i < dotCount; i++) {
-	// 			createDot(dotx, doty, i, "smiley");
-	// 		}
-	// 	}
-	// 	showSlide("training");
-	// 	$('.dot').bind('click touchstart', function(event) {
-	//     	var dotID = $(event.currentTarget).attr('id');
-
-	//     	//only count towards completion clicks on dots that have not yet been clicked
-	//     	if (allDots.indexOf(dotID) === -1) {
-	//     		return;
-	//     	}
-	//     	allDots.splice(allDots.indexOf(dotID), 1);
-	//     	document.getElementById(dotID).src = "dots/x.jpg";
-	//     	xcounter++
-	//     	if (xcounter === dotCount) {
-	//     		setTimeout(function () {
-	//     			$("#training").hide();
-	//     			if (dotgame === 0) {		
-	//     				//hide old x marks before game begins again
-	//     				var dotID;
-	//     				for (i = 1; i <= dotCount; i++) {
-	//     					dotID = "dot_" + i;
-	//     					training.removeChild(document.getElementById(dotID));
-	//     				}
-	// 					experiment.training();
-	// 					dotgame++; 
-	// 				} else {
-	// 					//document.body.style.background = "black";
-	// 					setTimeout(function() {
-	// 						showSlide("prestudy");
-	// 						//experiment.next();
-	// 					}, normalpause);
-	// 				}
-	// 			}, normalpause);
-	// 		}
-	//     });	   
-	// },
-
-	// MAIN DISPLAY FUNCTION
+    // MAIN DISPLAY FUNCTION
 	next: function(game) {
 
 		var gameItems = makeItemList(game);
 		var trialTypes = makeTrialTypes(game);
 		var wordsAndImages = makeWordsAndImages(game, gameItems);
 
-		var wordList = wordsAndImages[0];
+        var wordList = wordsAndImages[0];
 		var imageArray = wordsAndImages[1];
-
+        
 		var objects_html = "";
 		var counter = 1;
 		var numTrials = "";
@@ -265,13 +175,20 @@ var experiment = {
 		// Create the object table (tr=table row; td= table data)
 
 		//FIXME: Counterbalance which side the image appears on
-		//HTML for the first object on the left
-		leftname = "neginhib_objects/" + imageArray[0] + ".png";
+        experiment.pic1 = imageArray[0];
+        experiment.pic2 = imageArray[1];
+        if (reverse == 1) {
+        experiment.pic1 = imageArray[1];
+        experiment.pic2 = imageArray[0];        
+        }
+
+        //HTML for the first object on the left
+        leftname = "neginhib_objects/" + experiment.pic1 + ".png";
 		objects_html += '<table align = "center" cellpadding="30"><tr></tr><tr><td align="center"><img class="pic" src="' + leftname + '"alt="' + leftname + '" id= "leftPic"/></td>';
 
 		//HTML for the first object on the right
-		rightname = "neginhib_objects/" + imageArray[1] + ".png";
-		objects_html += '<td align="center"><img class="pic" src="' + rightname + '"alt="' + rightname + '" id= "rightPic"/></td>';
+            rightname = "neginhib_objects/" + experiment.pic2 + ".png";
+ 		objects_html += '<td align="center"><img class="pic" src="' + rightname + '"alt="' + rightname + '" id= "rightPic"/></td>';
 
 		objects_html += '</tr></table>';
 		$("#objects").html(objects_html);
@@ -300,8 +217,6 @@ var experiment = {
 
 			experiment.trialnum = counter;
 			experiment.word = wordList[0];
-			experiment.pic1 = imageArray[0];
-			experiment.pic2 = imageArray[1];
 
 			//get whether left or right pictures were target or distractor
 			if (experiment.pic1 === experiment.word) {
@@ -319,10 +234,10 @@ var experiment = {
 			var picID = $(event.currentTarget).attr('id');
 			if (picID === "leftPic") {
 				experiment.side = "L";
-				experiment.chosenpic = imageArray[0];
+				experiment.chosenpic = experiment.pic1;
 			} else {
 				experiment.side = "R";
-				experiment.chosenpic = imageArray[1];
+				experiment.chosenpic = experiment.pic2;
 			}
 
 			// Whether the response was correct
@@ -348,6 +263,12 @@ var experiment = {
 			imageArray.splice(0, 2);
 			wordList.splice(0, 1);
 
+        experiment.pic1 = imageArray[0];
+        experiment.pic2 = imageArray[1];
+        if (reverse == 1) {
+        experiment.pic1 = imageArray[1];
+        experiment.pic2 = imageArray[0];        
+        }
 
 			setTimeout(function() {
 				$("#stage").fadeOut();
@@ -366,8 +287,8 @@ var experiment = {
 					//move on to the next round after either the normal amount of time between critical rounds, or after 
 					//the filler has occurred
 					setTimeout(function() {
-						document.getElementById("leftPic").src = "neginhib_objects/" + imageArray[0] + ".png";
-						document.getElementById("rightPic").src = "neginhib_objects/" + imageArray[1] + ".png";
+						document.getElementById("leftPic").src = "neginhib_objects/" + experiment.pic1 + ".png";
+						document.getElementById("rightPic").src = "neginhib_objects/" + experiment.pic2 + ".png";
 
 						//to make word display visible (as an alternative to sound), uncomment just change background of display to white
 						$(document.getElementById(picID)).css('border', "none");

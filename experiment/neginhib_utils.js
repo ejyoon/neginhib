@@ -12,6 +12,16 @@ shuffle = function(o) { //v1.0
 	return o;
 }
 
+// random function
+function random(a,b) {
+  if (typeof b == "undefined") {
+    a = a || 2;
+    return Math.floor(Math.random()*a);
+  } else {
+    return Math.floor(Math.random()*(b-a+1)) + a;
+  }
+}
+
 getRandomInt = function(x, y) { 
 	var randInt = Math.floor(Math.random() * (x - y + 1)) + y;
 	return randInt
