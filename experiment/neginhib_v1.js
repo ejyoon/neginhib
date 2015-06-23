@@ -6,8 +6,6 @@
 var trainingNum = 0;
 var gameCounter = 0;
 var numGames = 3;
-var reverse = 1;
-// var reverse = random(2); // pseudo-counterbalance which sides pictures appear on
 
 //Number of trials per game
 var numPracticeTrials = 2;
@@ -175,6 +173,7 @@ var experiment = {
 		// Create the object table (tr=table row; td= table data)
 
 		//FIXME: Counterbalance which side the image appears on
+        var reverse = random(2);
         experiment.pic1 = imageArray[0];
         experiment.pic2 = imageArray[1];
         if (reverse == 1) {
@@ -262,13 +261,14 @@ var experiment = {
 			//remove the pictures from the image array that have been used, and the word from the wordList that has been used
 			imageArray.splice(0, 2);
 			wordList.splice(0, 1);
-
-        experiment.pic1 = imageArray[0];
-        experiment.pic2 = imageArray[1];
-        if (reverse == 1) {
-        experiment.pic1 = imageArray[1];
-        experiment.pic2 = imageArray[0];        
-        }
+        
+            var reverse = random(2);
+            experiment.pic1 = imageArray[0];
+            experiment.pic2 = imageArray[1];
+            if (reverse == 1) {
+            experiment.pic1 = imageArray[1];
+            experiment.pic2 = imageArray[0];        
+            }
 
 			setTimeout(function() {
 				$("#stage").fadeOut();
