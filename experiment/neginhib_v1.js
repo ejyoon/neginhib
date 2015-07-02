@@ -3,7 +3,6 @@
 
 // ---------------- PARAMETERS ------------------
 
-var trainingNum = 0;
 var gameCounter = 0;
 var numGames = 3;
 
@@ -18,10 +17,10 @@ var minInhib = 4;
 var maxInhib = 7;
 
 //amount of white space between trials
-var normalpause = 0;//Value was changed from 500 to 0 to remove delay between presentations
+var normalPause = 0; //Value was changed from 500 to 0 to remove delay between presentations
 
 //pause after picture chosen, to display red border around picture selected
-var timeafterClick = 0;//Value was changed from 500 to 0 to remove delay after choice
+var timeafterClick = 0; //Value was changed from 500 to 0 to remove delay after choice
 
 //length of filler (every time fill2 comes up, add 1sec of time)
 var fillerpause = 0;
@@ -90,37 +89,15 @@ var experiment = {
 		}
 		experiment.order = parseInt(document.getElementById("order").value);
 		gameList = makeGameList(experiment.order);
-		experiment.preStudy();
+
+		//Note: I moved the audio "preloading" here; we shoudld double-check that it still works
+		audioSprite.play();
+		audioSprite.pause();
+		experiment.training();
 	},
 
-	preStudy: function() {
-		$("#stage").fadeOut();
-		showSlide("prestudy");
-
-		//$("#prestudy").hide();
-		$('#startButton').html(gameList[gameCounter])
-		$('#startButton').bind('click touchstart', function(event) {
-			setTimeout(function() {
-				experiment.training(trainingNum); //FIXME: Make 3 versions of dot game (dots, smiley, stars?)
-			}, normalpause);
-		})
-	},
-
-	//sets up and allows participants to play "the dot game"
-	training: function(dotgame) {
-
-		//preload sound
-		if (dotgame === 0) {
-			audioSprite.play();
-			audioSprite.pause();
-		} else {
-			training.removeChild(dot_1);
-			training.removeChild(dot_2);
-			training.removeChild(dot_3);
-			training.removeChild(dot_4);
-			training.removeChild(dot_5);
-		}
-
+	//We start with a training game to make sure children know how to use the iPad
+	training: function() {
 		var xcounter = 0;
 		var dotCount = 5;
 
@@ -136,27 +113,44 @@ var experiment = {
 			document.getElementById(dotID).src = "dots/x.jpg";
 			xcounter++;
 			if (xcounter === dotCount) {
+				training.removeChild(dot_1);
+				training.removeChild(dot_2);
+				training.removeChild(dot_3);
+				training.removeChild(dot_4);
+				training.removeChild(dot_5);
 				setTimeout(function() {
 					$("#training").hide();
-					setTimeout(function() {
-						document.body.style.background = "black";
-						experiment.next(gameList[gameCounter]);
-					}, normalpause)
-				}, normalpause)
+					showSlide("dotGame");
+				}, normalPause)
 			}
 		})
 	},
 
-    // MAIN DISPLAY FUNCTION
+	preStudy: function() {
+		$("#stage").fadeOut();
+		showSlide("prestudy");
+
+		//$("#prestudy").hide();
+		$('#startButton').html(gameList[gameCounter])
+		$('#startButton').bind('click touchstart', function(event) {
+			setTimeout(function() {
+				experiment.next(gameList[gameCounter]);
+			}, normalPause);
+		})
+	},
+
+	// MAIN DISPLAY FUNCTION
 	next: function(game) {
+
+		document.body.style.background = "black";
 
 		var gameItems = makeItemList(game);
 		var trialTypes = makeTrialTypes(game);
 		var wordsAndImages = makeWordsAndImages(game, gameItems);
 
-        var wordList = wordsAndImages[0];
+		var wordList = wordsAndImages[0];
 		var imageArray = wordsAndImages[1];
-        
+
 		var objects_html = "";
 		var counter = 1;
 		var numTrials = "";
@@ -173,26 +167,26 @@ var experiment = {
 		// Create the object table (tr=table row; td= table data)
 
 		//FIXME: Counterbalance which side the image appears on
-        var reverse = random(2);
-        experiment.pic1 = imageArray[0];
-        experiment.pic2 = imageArray[1];
-        if (reverse == 1) {
-        experiment.pic1 = imageArray[1];
-        experiment.pic2 = imageArray[0];        
-        }
+		var reverse = random(2);
+		experiment.pic1 = imageArray[0];
+		experiment.pic2 = imageArray[1];
+		if (reverse == 1) {
+			experiment.pic1 = imageArray[1];
+			experiment.pic2 = imageArray[0];
+		}
 
-        //HTML for the first object on the left
-        leftname = "neginhib_objects/" + experiment.pic1 + ".png";
+		//HTML for the first object on the left
+		leftname = "neginhib_objects/" + experiment.pic1 + ".png";
 		objects_html += '<table align = "center" cellpadding="30"><tr></tr><tr><td align="center"><img class="pic" src="' + leftname + '"alt="' + leftname + '" id= "leftPic"/></td>';
 
 		//HTML for the first object on the right
-            rightname = "neginhib_objects/" + experiment.pic2 + ".png";
- 		objects_html += '<td align="center"><img class="pic" src="' + rightname + '"alt="' + rightname + '" id= "rightPic"/></td>';
+		rightname = "neginhib_objects/" + experiment.pic2 + ".png";
+		objects_html += '<td align="center"><img class="pic" src="' + rightname + '"alt="' + rightname + '" id= "rightPic"/></td>';
 
 		objects_html += '</tr></table>';
 		$("#objects").html(objects_html);
 
-		$("#stage").fadeIn();
+		showSlide("stage")
 
 		var startTime = (new Date()).getTime();
 		playPrompt(wordList[0]);
@@ -261,14 +255,14 @@ var experiment = {
 			//remove the pictures from the image array that have been used, and the word from the wordList that has been used
 			imageArray.splice(0, 2);
 			wordList.splice(0, 1);
-        
-            var reverse = random(2);
-            experiment.pic1 = imageArray[0];
-            experiment.pic2 = imageArray[1];
-            if (reverse == 1) {
-            experiment.pic1 = imageArray[1];
-            experiment.pic2 = imageArray[0];        
-            }
+
+			var reverse = random(2);
+			experiment.pic1 = imageArray[0];
+			experiment.pic2 = imageArray[1];
+			if (reverse == 1) {
+				experiment.pic1 = imageArray[1];
+				experiment.pic2 = imageArray[0];
+			}
 
 			setTimeout(function() {
 				$("#stage").fadeOut();
@@ -278,7 +272,6 @@ var experiment = {
 						experiment.end();
 					} else {
 						gameCounter++;
-						trainingNum++;
 						document.body.style.background = "white";
 						experiment.preStudy();
 					}
@@ -303,7 +296,7 @@ var experiment = {
 
 						startTime = (new Date()).getTime();
 						playPrompt(wordList[0]);
-					}, normalpause);
+					}, normalPause);
 				}
 			}, timeafterClick);
 		});
@@ -326,7 +319,7 @@ var experiment = {
 	end: function() {
 		setTimeout(function() {
 			$("#stage").fadeOut();
-		}, normalpause);
+		}, normalPause);
 		showSlide("finish");
 		document.body.style.background = "black";
 	},
