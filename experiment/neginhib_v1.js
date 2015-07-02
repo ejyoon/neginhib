@@ -127,7 +127,7 @@ var experiment = {
 	},
 
 	preStudy: function() {
-		$("#stage").fadeOut();
+		$("#stage").hide();
 		showSlide("prestudy");
 
 		//$("#prestudy").hide();
@@ -265,7 +265,7 @@ var experiment = {
 			}
 
 			setTimeout(function() {
-				$("#stage").fadeOut();
+				$("#stage").hide();
 				//there are no more trials for the experiment to run
 				if (counter === numTrials + 1) {
 					if (gameCounter === numGames) {
