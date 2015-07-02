@@ -18,7 +18,7 @@ var minInhib = 4;
 var maxInhib = 7;
 
 //amount of white space between trials
-var normalpause = 500;
+var normalpause = 0;//Value was changed from 500 to 0 to remove delay between presentations
 
 //pause after picture chosen, to display red border around picture selected
 var timeafterClick = 500;
