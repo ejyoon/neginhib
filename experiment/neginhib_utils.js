@@ -57,30 +57,26 @@ getCurrentTime = function() {
 }
 
 makeGameList = function(order) {
-	var gameList = ["practice", "inhibition", "negation", "implicature"];
+	var gameList = ["inhibition", "negation", "implicature"];
 	if (order === 2) {
-		var gameList = ["practice", "inhibition", "implicature", "negation"];
+		var gameList = ["inhibition", "implicature", "negation"];
 	}
 	return gameList;
 }
 
 makeItemList = function(game) {
-	if (game == "practice") {
-		var startSlice = 0;
-		var endSlice = numPracticeTrials;
-		var itemList = allItems.slice(startSlice, endSlice);
-	} else if (game == "inhibition") {
-		var startSlice = numPracticeTrials;
-		var endSlice = numPracticeTrials + numInhibTrials;
-		var itemList = allItems.slice(startSlice, endSlice);
+	if (game == "inhibition") {
+		var startSlice = 0
+		var endSlice = numInhibTrials;
+		var itemList = items.slice(startSlice, endSlice);
 	} else if (game == "negation") {
-		var startSlice = numPracticeTrials + numInhibTrials;
-		var endSlice = numPracticeTrials + numInhibTrials + numNegTrials;
-		var itemList = allItems.slice(startSlice, endSlice);
+		var startSlice = numInhibTrials;
+		var endSlice = numInhibTrials + numNegTrials;
+		var itemList = items.slice(startSlice, endSlice);
 	} else if (game == "implicature") {
-		var startSlice = numPracticeTrials + numInhibTrials + numNegTrials;
-		var endSlice = numPracticeTrials + numInhibTrials + numNegTrials + numImplicTrials;
-		var itemList = allItems.slice(startSlice, endSlice);
+		var startSlice = numInhibTrials + numNegTrials;
+		var endSlice = numInhibTrials + numNegTrials + numImplicTrials;
+		var itemList = items.slice(startSlice, endSlice);
 	}
 	return itemList;
 }
@@ -108,13 +104,7 @@ makeWordsAndImages = function(game, items) { //input itemList from makeItemList
 	}
 
 	for (i = 0; i < items.length; i++) {
-		if (game == "practice") {
-			//words:
-			wordList.push(items[i] + "_pos");
-			//images:
-			var thisImList = [items[i] + "_pos", items[i] + "_foil"];
-			var imageArray = imageArray.concat(thisImList);
-		} else if (game == "inhibition") {
+		if (game == "inhibition") {
 			var numStay = getRandomInt(minInhib, maxInhib); // how many times should the control be repeated?
 			numInhibTrials = numInhibTrials + numStay + 1;
 			//words:

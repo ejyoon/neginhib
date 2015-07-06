@@ -4,10 +4,9 @@
 // ---------------- PARAMETERS ------------------
 
 var gameCounter = 0;
-var numGames = 3;
+var numGames = 2; //3 games (javascript indexing starts at 0)
 
 //Number of trials per game
-var numPracticeTrials = 2;
 var numInhibTrials = 2;
 var numNegTrials = 2;
 var numImplicTrials = 2;
@@ -30,9 +29,7 @@ var audioSprite = $("#sound_player")[0];
 var handler;
 
 ///items (trial items are shuffled)
-var practiceItems = shuffle(["lion", "rabbit"]);
 var items = shuffle(["apple", "apple", "car", "car", "dog", "dog"]);
-var allItems = practiceItems.concat(items);
 
 
 showSlide("instructions");
@@ -67,6 +64,8 @@ var experiment = {
 	//FIXME: phases: (i) inhibition (ii) negation (iii) implicature  
 	trialtype: "",
 	// FIXME: trialtype -- (i) inhibition phase: baseline vs. inhibitory (ii) negation phase: pos vs. neg (iii) implicature phase: control vs. inference
+	practice: "",
+	//"practice" for the practice trials (the first two for each game), "test" for test trials
 	date: getCurrentDate(),
 	//the date of the experiment
 	timestamp: getCurrentTime(),
@@ -154,9 +153,7 @@ var experiment = {
 		var objects_html = "";
 		var counter = 1;
 		var numTrials = "";
-		if (game == "practice") {
-			numTrials = numPracticeTrials;
-		} else if (game == "inhibition") {
+		if (game == "inhibition") {
 			numTrials = wordsAndImages[2]; //the function makeWordsAndImages updates the number of inhib trials
 		} else if (game == "negation") {
 			numTrials = numNegTrials;
@@ -238,6 +235,13 @@ var experiment = {
 				experiment.response = "Y";
 			} else {
 				experiment.response = "N"
+			}
+
+			//Was this a practice or a test trial?
+			if (counter < 3) {
+				experiment.practice = "practice"
+			} else {
+				experiment.practice = "test"
 			}
 
 			//FIXME: Get this info
