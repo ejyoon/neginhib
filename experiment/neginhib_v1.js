@@ -30,7 +30,11 @@ var handler;
 
 ///items (trial items are shuffled)
 var items = shuffle(["apple", "apple", "car", "car", "dog", "dog"]);
-
+// FIXME after pictures are done & trial numbers are adjusted, change to:
+// var items = ["apple", "car", "dog", "carrot", "teddybear", "truck", ...
+// should this be selected based on where the inhibition trials are? (because inhibition trials get 10 items, whereas the other two get 10 x 6 repetitions)
+// FIXME list 2: 
+// var items = // opposite of list 1 items -- thus, if list 1 had apple, list 2 would have orange.
 
 showSlide("instructions");
 // MAIN EXPERIMENT
@@ -40,8 +44,8 @@ var experiment = {
 	//inputed at beginning of experiment
 	trialnum: 0,
 	//trial number
-//	order: 1,
-	//whether child received list 1 or list 2
+	order: 0,
+	//order (0, 1, 2, 3, 4, or 5; refer to neginhib_utils.js)
 	word: "",
 	//word that child is queried on
 	pic1: "",
@@ -85,8 +89,14 @@ var experiment = {
 //			return;
 //		}
 //		experiment.order = parseInt(document.getElementById("order").value);
-        
-		gameList = makeGameList();
+
+        //order
+        //0,1: inhib first
+        //2,3: inhib second
+        //4,5: inhib third
+        experiment.order = random(6);
+
+		gameList = makeGameList(experiment.order);
 //        var gameList = shuffle(["inhibition", "negation", "implicature"]);
 
 
@@ -310,7 +320,7 @@ var experiment = {
 	//concatenates all experimental variables into a string which represents one "row" of data in the eventual csv, to live in the server
 	processOneRow: function() {
 		var dataforRound = experiment.subid;
-//		dataforRound += "," + experiment.order 
+		dataforRound += "," + experiment.order 
         dataforRound += "," + experiment.trialnum + "," + experiment.word;
 		dataforRound += "," + experiment.pic1 + "," + experiment.pic2;
 		dataforRound += "," + experiment.trialtype + "," + experiment.pic1type + "," + experiment.pic2type;
