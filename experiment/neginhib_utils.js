@@ -56,11 +56,11 @@ getCurrentTime = function() {
 	return (hours + ":" + minutes);
 }
 
-makeGameList = function(order) {
-	var gameList = ["inhibition", "negation", "implicature"];
-	if (order === 2) {
-		var gameList = ["inhibition", "implicature", "negation"];
-	}
+makeGameList = function() {
+	var gameList = shuffle(["inhibition", "negation", "implicature"]);
+//	if (order === 2) {
+//		var gameList = ["inhibition", "implicature", "negation"];
+//	}
 	return gameList;
 }
 

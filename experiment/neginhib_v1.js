@@ -34,15 +34,13 @@ var items = shuffle(["apple", "apple", "car", "car", "dog", "dog"]);
 
 showSlide("instructions");
 // MAIN EXPERIMENT
-// FIXME: set up three phases (i) inhibition (ii) negation (iii) implicature, and randomize the presentation order of the phase 
-// or should these just be encoded in 'trialtype's?
 var experiment = {
 
 	subid: "",
 	//inputed at beginning of experiment
 	trialnum: 0,
 	//trial number
-	order: 1,
+//	order: 1,
 	//whether child received list 1 or list 2
 	word: "",
 	//word that child is queried on
@@ -82,12 +80,15 @@ var experiment = {
 		experiment.subid = document.getElementById("subjectID").value;
 
 		//list
-		if (document.getElementById("order").value !== "1" && document.getElementById("order").value !== "2") { //|| document.getElementById("order").value !== "2") {
-			$("#checkMessage").html('<font color="red">For list, you must choose either a 1 or 2</font>');
-			return;
-		}
-		experiment.order = parseInt(document.getElementById("order").value);
-		gameList = makeGameList(experiment.order);
+//		if (document.getElementById("order").value !== "1" && document.getElementById("order").value !== "2") { //|| document.getElementById("order").value !== "2") {
+//			$("#checkMessage").html('<font color="red">For list, you must choose either a 1 or 2</font>');
+//			return;
+//		}
+//		experiment.order = parseInt(document.getElementById("order").value);
+        
+		gameList = makeGameList();
+//        var gameList = shuffle(["inhibition", "negation", "implicature"]);
+
 
 		//Note: I moved the audio "preloading" here; we shoudld double-check that it still works
 		audioSprite.play();
@@ -309,7 +310,8 @@ var experiment = {
 	//concatenates all experimental variables into a string which represents one "row" of data in the eventual csv, to live in the server
 	processOneRow: function() {
 		var dataforRound = experiment.subid;
-		dataforRound += "," + experiment.order + "," + experiment.trialnum + "," + experiment.word;
+//		dataforRound += "," + experiment.order 
+        dataforRound += "," + experiment.trialnum + "," + experiment.word;
 		dataforRound += "," + experiment.pic1 + "," + experiment.pic2;
 		dataforRound += "," + experiment.trialtype + "," + experiment.pic1type + "," + experiment.pic2type;
 		dataforRound += "," + experiment.side + "," + experiment.chosenpic + "," + experiment.response;
