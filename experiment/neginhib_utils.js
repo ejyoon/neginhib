@@ -57,20 +57,59 @@ getCurrentTime = function() {
 }
 
 makeGameList = function(order) {
-	var gameList = ["inhibition", "negation", "implicature"];
-	if (order === 1) {
+    if (order === 1) {
+	   var gameList = ["inhibition", "negation", "implicature"];
+    } else if (order === 2) {
 		var gameList = ["inhibition", "implicature", "negation"];
-	} else if (order === 2) {
+	} else if (order === 3) {
         var gameList = ["negation", "inhibition", "implicature"];
-    } else if (order === 3) {
-        var gameList = ["implicature", "inhibition", "negation"];
     } else if (order === 4) {
-        var gameList = ["implicature", "negation", "inhibition"];
+        var gameList = ["implicature", "inhibition", "negation"];
     } else if (order === 5) {
+        var gameList = ["implicature", "negation", "inhibition"];
+    } else if (order === 6) {
         var gameList = ["negation", "implicature", "inhibition"];
     }
 	return gameList;
 }
+
+//makeSetList = function(order) {
+//    if (order === 1 || order === 2) {
+//        var setList = items_noninhib2.concat(items_noninhib1, items_inhibition);
+//    } else if (order === 3 || order === 4) {
+//        var setList = items_noninhib2.concat(items_inhibition, items_noninhib1);
+//    } else if (order === 5 || order === 6) {
+//        var setList = items_inhibition.concat(items_noninhib2, items_noninhib1);
+//    }
+//    return setList; 
+//}
+
+//makeSetList = function(order) {
+//    if (order === 1 || order === 2) {
+//        var setList = ["apple", "car", "dog","apple", "car", "dog"];
+//    } else if (order === 3 || order === 4) {
+//        var setList = ["car", "dog", "dog","apple", "apple", "car"];
+//    } else if (order === 5 || order === 6) {
+//        var setList = ["dog","apple", "apple", "car", "car", "dog"];
+//    }
+//    return setList; 
+//}
+
+//items
+makeSetList = function(order) {
+    if (order === 1 || order === 3 || order === 5) {
+        var items_inhibition = ["apple", "car", "apple"];
+        var items_negation = ["dog","apple"];
+        var items_implicature = ["car", "dog"];
+    } else if (order === 2 || order === 4 || order === 6) {
+        var items_inhibition = ["car", "dog", "car"];
+        var items_negation = ["apple", "car"];
+        var items_implicature = ["dog","apple"];
+    }
+    var items = items_inhibition.concat(items_negation, items_implicature);
+    return items;
+}
+
 
 makeItemList = function(game) {
 	if (game == "inhibition") {

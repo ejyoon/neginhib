@@ -7,7 +7,7 @@ var gameCounter = 0;
 var numGames = 2; //3 games (javascript indexing starts at 0)
 
 //Number of trials per game
-var numInhibTrials = 2;
+var numInhibTrials = 3;
 var numNegTrials = 2;
 var numImplicTrials = 2;
 
@@ -28,13 +28,13 @@ var fillerpause = 0;
 var audioSprite = $("#sound_player")[0];
 var handler;
 
-///items (trial items are shuffled)
-var items = shuffle(["apple", "apple", "car", "car", "dog", "dog"]);
+
 // FIXME after pictures are done & trial numbers are adjusted, change to:
 // var items = ["apple", "car", "dog", "carrot", "teddybear", "truck", ...
 // should this be selected based on where the inhibition trials are? (because inhibition trials get 10 items, whereas the other two get 10 x 6 repetitions)
 // FIXME list 2: 
 // var items = // opposite of list 1 items -- thus, if list 1 had apple, list 2 would have orange.
+
 
 showSlide("instructions");
 // MAIN EXPERIMENT
@@ -44,7 +44,7 @@ var experiment = {
 	//inputed at beginning of experiment
 	trialnum: 0,
 	//trial number
-	order: 0,
+	order: "",
 	//order (0, 1, 2, 3, 4, or 5; refer to neginhib_utils.js)
 	word: "",
 	//word that child is queried on
@@ -91,15 +91,11 @@ var experiment = {
 //		experiment.order = parseInt(document.getElementById("order").value);
 
         //order
-        //0,1: inhib first
-        //2,3: inhib second
-        //4,5: inhib third
-        experiment.order = random(6);
+        //experiment.order = random(6)+1;
+        experiment.order = 1; //testing
 
 		gameList = makeGameList(experiment.order);
-//        var gameList = shuffle(["inhibition", "negation", "implicature"]);
-
-
+        items = makeSetList(experiment.order);      
 		//Note: I moved the audio "preloading" here; we shoudld double-check that it still works
 		audioSprite.play();
 		audioSprite.pause();
