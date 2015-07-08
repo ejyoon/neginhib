@@ -35,14 +35,14 @@ var spriteData = {
 		length: 1.2
 	},
 	apple_implic: {
-		start: 135.590,
+		start: 142.090,
 		onset: 142.090,
-		length: 8.011
+		length: 1.2
 	},
 	apple_control: {
-		start: 135.590,
+		start: 142.090,
 		onset: 142.090,
-		length: 8.011
+		length: 1.2
 	},
 	car_pos: {
 		start: 227.957,
@@ -60,14 +60,14 @@ var spriteData = {
 		length: 1.00
 	},
 	car_implic: {
-		start: 221.847,
+		start: 227.957,
 		onset: 227.957,
-		length: 7.620
+		length: 1.00
 	},
 	car_control: {
-		start: 221.847,
+		start: 227.957,
 		onset: 227.957,
-		length: 7.620
+		length: 1.00
 	},
 	dog_pos: {
 		start: 197.385,
@@ -85,14 +85,14 @@ var spriteData = {
 		length: 1.00
 	},
 	dog_implic: {
-		start: 190.914,
+		start: 197.385,
 		onset: 197.385,
-		length: 8.071
+		length: 1.00
 	},
 	dog_control: {
-		start: 190.914,
+		start: 197.385,
 		onset: 197.385,
-		length: 8.071
+		length: 1.00
 	},
 	banana: {
 		start: 157.932,
