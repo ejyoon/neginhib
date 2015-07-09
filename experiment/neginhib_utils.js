@@ -89,6 +89,8 @@ makeSetList = function(order) {
 }
 
 //FIXME: with more trials, after adding sounds
+//FIXME: adjust the number of trials accordingly (e.g., var numInhibTrials = 3; var numNegTrials = 2; var numImplicTrials = 2;)
+
 //makeSetList = function(order) {
 //    if (order === 1 || order === 4) {
 //        var items_inhibition = ["apple", "car", "dog", "teddybear", "bicycle", "flower", "banana", "cat", "cup", "bird", "lamp", "cookie"]; //FIXME: latin square?
