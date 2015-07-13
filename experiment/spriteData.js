@@ -1,24 +1,4 @@
 var spriteData = {
-	cow_pos: {
-		start: 6.450,
-		onset: 6.450,
-		length: 0.9
-	},
-	monkey_pos: {
-		start: 15.811,
-		onset: 15.811,
-		length: 0.9
-	},
-	lion_pos: {
-		start: 26.042,
-		onset: 26.042,
-		length: 0.9
-	},
-	rabbit_pos: {
-		start: 35.313,
-		onset: 35.313,
-		length: 0.9
-	},
 	apple_pos: {
 		start: 142.090,
 		onset: 142.090,
@@ -50,8 +30,8 @@ var spriteData = {
 		length: 1.00
 	},
 	car_neg: {
-		start: 227.957,
-		onset: 227.957,
+		start: 220.216,
+		onset: 220.216,
 		length: 1.00
 	},
 	car_inhib: {
@@ -94,6 +74,232 @@ var spriteData = {
 		onset: 197.385,
 		length: 1.00
 	},
+	cat_pos: {
+		start: 282.771,
+		onset: 282.771,
+		length: 1.00
+	},
+	cat_neg: {
+		start: 197.385,
+		onset: 197.385,
+		length: 1.00
+	},
+	cat_inhib: {
+		start: 197.385,
+		onset: 197.385,
+		length: 1.00
+	},
+	cat_implic: {
+		start: 282.771,
+		onset: 282.771,
+		length: 1.00
+	},
+	cat_control: {
+		start: 282.771,
+		onset: 282.771,
+		length: 1.00
+	},
+	banana_pos: {
+		start: 251.509,
+		onset: 251.509,
+		length: 1.00
+	},
+	banana_neg: {
+		start: 142.090,
+		onset: 142.090,
+		length: 1.2
+	},
+	banana_inhib: {
+		start: 142.090,
+		onset: 142.090,
+		length: 1.2
+	},
+	banana_implic: {
+		start: 251.509,
+		onset: 251.509,
+		length: 1.00
+	},
+	banana_control: {
+		start: 251.509,
+		onset: 251.509,
+		length: 1.00
+	},
+	bicycle_pos: {
+		start: 126.429 ,
+		onset: 126.429 ,
+		length: 1.00
+	},
+	bicycle_neg: {
+		start: 227.957,
+		onset: 227.957,
+		length: 1.00
+	},
+	bicycle_inhib: {
+		start: 227.957,
+		onset: 227.957,
+		length: 1.00
+	},
+	bicycle_implic: {
+		start: 126.429 ,
+		onset: 126.429 ,
+		length: 1.00
+	},
+	bicycle_control: {
+		start: 126.429 ,
+		onset: 126.429 ,
+		length: 1.00
+	},
+	lamp_pos: {
+		start: 393.149,
+		onset: 393.149,
+		length: 1.00
+	},
+	lamp_neg: {
+		start: 227.957,
+		onset: 227.957,
+		length: 1.00
+	},
+	lamp_inhib: {
+		start: 227.957,
+		onset: 227.957,
+		length: 1.00
+	},
+	lamp_implic: {
+		start: 393.149,
+		onset: 393.149,
+		length: 1.00
+	},
+	lamp_control: {
+		start: 393.149,
+		onset: 393.149,
+		length: 1.00
+	},
+	cup_pos: {
+		start: 400.710,
+		onset: 400.710,
+		length: 1.00
+	},
+	cup_neg: {
+		start: 227.957,
+		onset: 227.957,
+		length: 1.00
+	},
+	cup_inhib: {
+		start: 227.957,
+		onset: 227.957,
+		length: 1.00
+	},
+	cup_implic: {
+		start: 400.710,
+		onset: 400.710,
+		length: 1.00
+	},
+	cup_control: {
+		start: 400.710,
+		onset: 400.710,
+		length: 1.00
+	},
+	teddybear_pos: {
+		start: 181.483,
+		onset: 181.483,
+		length: 1.00
+	},
+	teddybear_neg: {
+		start: 173.383,
+		onset: 173.383,
+		length: 1.00
+	},
+	teddybear_inhib: {
+		start: 173.383,
+		onset: 173.383,
+		length: 1.00
+	},
+	teddybear_implic: {
+		start: 181.483,
+		onset: 181.483,
+		length: 1.00
+	},
+	teddybear_control: {
+		start: 181.483,
+		onset: 181.483,
+		length: 1.00
+	},
+	flower_pos: {
+		start: 173.383,
+		onset: 173.383,
+		length: 1.00
+	},
+	flower_neg: {
+		start: 181.483,
+		onset: 181.483,
+		length: 1.00
+	},
+	flower_inhib: {
+		start: 181.483,
+		onset: 181.483,
+		length: 1.00
+	},
+	flower_implic: {
+		start: 173.383,
+		onset: 173.383,
+		length: 1.00
+	},
+	flower_control: {
+		start: 173.383,
+		onset: 173.383,
+		length: 1.00
+	},
+	cookie_pos: {
+		start: 400.710,
+		onset: 400.710,
+		length: 1.00
+	},
+	cookie_neg: {
+		start: 227.957,
+		onset: 227.957,
+		length: 1.00
+	},
+	cookie_inhib: {
+		start: 227.957,
+		onset: 227.957,
+		length: 1.00
+	},
+	cookie_implic: {
+		start: 400.710,
+		onset: 400.710,
+		length: 1.00
+	},
+	cookie_control: {
+		start: 400.710,
+		onset: 400.710,
+		length: 1.00
+	},
+	bird_pos: {
+		start: 400.710,
+		onset: 400.710,
+		length: 1.00
+	},
+	bird_neg: {
+		start: 227.957,
+		onset: 227.957,
+		length: 1.00
+	},
+	bird_inhib: {
+		start: 227.957,
+		onset: 227.957,
+		length: 1.00
+	},
+	bird_implic: {
+		start: 400.710,
+		onset: 400.710,
+		length: 1.00
+	},
+	bird_control: {
+		start: 400.710,
+		onset: 400.710,
+		length: 1.00
+	},
+
 	banana: {
 		start: 157.932,
 		onset: 157.932,

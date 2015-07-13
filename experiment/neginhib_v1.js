@@ -84,18 +84,18 @@ var experiment = {
 		experiment.subid = document.getElementById("subjectID").value;
 
 		//list
-//		if (document.getElementById("order").value !== "1" && document.getElementById("order").value !== "2") { //|| document.getElementById("order").value !== "2") {
-//			$("#checkMessage").html('<font color="red">For list, you must choose either a 1 or 2</font>');
-//			return;
-//		}
-//		experiment.order = parseInt(document.getElementById("order").value);
+		if (document.getElementById("list").value !== "1" && document.getElementById("list").value !== "2") { //|| document.getElementById("list").value !== "2") {
+			$("#checkMessage").html('<font color="red">For list, you must choose either a 1 or 2</font>');
+			return;
+		}
+		experiment.list = parseInt(document.getElementById("list").value);
 
         //order
         //experiment.order = random(6)+1;
         experiment.order = 1; //testing
 
 		gameList = makeGameList(experiment.order);
-        items = makeSetList(experiment.order);      
+        items = makeSetList(experiment.list);      
 		//Note: I moved the audio "preloading" here; we shoudld double-check that it still works
 		audioSprite.play();
 		audioSprite.pause();
@@ -316,6 +316,7 @@ var experiment = {
 	//concatenates all experimental variables into a string which represents one "row" of data in the eventual csv, to live in the server
 	processOneRow: function() {
 		var dataforRound = experiment.subid;
+        dataforRound += "," + experiment.list 
 		dataforRound += "," + experiment.order 
         dataforRound += "," + experiment.trialnum + "," + experiment.word;
 		dataforRound += "," + experiment.pic1 + "," + experiment.pic2;
