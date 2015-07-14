@@ -323,7 +323,7 @@ var experiment = {
 		dataforRound += "," + experiment.trialtype + "," + experiment.pic1type + "," + experiment.pic2type;
 		dataforRound += "," + experiment.side + "," + experiment.chosenpic + "," + experiment.response;
 		dataforRound += "," + experiment.date + "," + experiment.timestamp + "," + experiment.reactiontime + "\n";
-		$.post("https://stanford.edu/group/langcog/cgi-bin/EJY/neginhib/neginhibstudysave.php", {
+		$.post("https://langcog.stanford.edu/cgi-bin/EJY/neginhib/neginhibstudysave.php", {
 			postresult_string: dataforRound
 		});
 	},
