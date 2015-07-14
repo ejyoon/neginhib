@@ -7,9 +7,9 @@ var gameCounter = 0;
 var numGames = 2; //3 games (javascript indexing starts at 0)
 
 //Number of trials per game
-var numInhibTrials = 3;
-var numNegTrials = 2;
-var numImplicTrials = 2;
+var numInhibTrials = 12;
+var numNegTrials = 60;
+var numImplicTrials = 60;
 
 //For inhibition game, number of "control" trials before inhibition trial
 var minInhib = 4;
@@ -91,8 +91,8 @@ var experiment = {
 		experiment.list = parseInt(document.getElementById("list").value);
 
         //order
-        //experiment.order = random(6)+1;
-        experiment.order = 1; //testing
+        experiment.order = random(6)+1;
+        //experiment.order = 1; //testing
 
 		gameList = makeGameList(experiment.order);
         items = makeSetList(experiment.list);      

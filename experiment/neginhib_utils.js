@@ -94,24 +94,18 @@ makeGameList = function(order) {
 // items
 makeSetList = function(list) {
     if (list === 1) {
-        var items_inhibition = ["apple",	"car",	"dog"
-                                //,	"teddybear",	"banana",	"bicycle",	"cat",	"flower",	"cookie",	"lamp",	"bird",	"cup"
+        var items_inhibition = ["apple",	"car",	"dog",	"teddybear",	"banana",	"bicycle",	"cat",	"flower",	"cookie",	"lamp",	"bird",	"cup"
                                ]; 
-        var items_negation = ["dog",	"cat"
-                              //,	"teddybear",	"cookie",	"car",	"cup",	"bicycle",	"lamp",	"apple",	"bird",	"flower",	"banana",	"flower",	"bicycle",	"cookie",	"cat",	"lamp",	"apple",	"bird",	"cup",	"teddybear",	"dog",	"banana",	"car",	"car",	"banana",	"cat",	"bird",	"teddybear",	"cookie",	"apple",	"cup",	"dog",	"bicycle",	"flower",	"lamp",	"teddybear",	"flower",	"cat",	"car",	"lamp",	"cup",	"bicycle",	"bird",	"dog",	"banana",	"cookie",	"apple",	"cup",	"teddybear",	"car",	"apple",	"dog",	"banana",	"bird",	"lamp",	"bicycle",	"cat",	"flower",	"cookie"
+        var items_negation = ["dog",	"cat",	"teddybear",	"cookie",	"car",	"cup",	"bicycle",	"lamp",	"apple",	"bird",	"flower",	"banana",	"flower",	"bicycle",	"cookie",	"cat",	"lamp",	"apple",	"bird",	"cup",	"teddybear",	"dog",	"banana",	"car",	"car",	"banana",	"cat",	"bird",	"teddybear",	"cookie",	"apple",	"cup",	"dog",	"bicycle",	"flower",	"lamp",	"teddybear",	"flower",	"cat",	"car",	"lamp",	"cup",	"bicycle",	"bird",	"dog",	"banana",	"cookie",	"apple",	"cup",	"teddybear",	"car",	"apple",	"dog",	"banana",	"bird",	"lamp",	"bicycle",	"cat",	"flower",	"cookie"
                              ];
-        var items_implicature = ["banana",	"cup"
-                                 //,	"apple",	"cat",	"cookie",	"teddybear",	"dog",	"bicycle",	"lamp",	"car",	"flower",	"bird",	"bicycle",	"dog",	"flower",	"bird",	"cat",	"cookie",	"apple",	"lamp",	"banana",	"car",	"cup",	"teddybear",	"bird",	"banana",	"apple",	"cat",	"flower",	"teddybear",	"bicycle",	"cup",	"car",	"cookie",	"lamp",	"dog",	"cookie",	"bird",	"banana",	"lamp",	"car",	"cat",	"flower",	"bicycle",	"teddybear",	"cup",	"dog",	"apple",	"lamp",	"car",	"flower",	"banana",	"cookie",	"dog",	"apple",	"bird",	"teddybear",	"cup",	"bicycle",	"cat"
+        var items_implicature = ["banana",	"cup",	"apple",	"cat",	"cookie",	"teddybear",	"dog",	"bicycle",	"lamp",	"car",	"flower",	"bird",	"bicycle",	"dog",	"flower",	"bird",	"cat",	"cookie",	"apple",	"lamp",	"banana",	"car",	"cup",	"teddybear",	"bird",	"banana",	"apple",	"cat",	"flower",	"teddybear",	"bicycle",	"cup",	"car",	"cookie",	"lamp",	"dog",	"cookie",	"bird",	"banana",	"lamp",	"car",	"cat",	"flower",	"bicycle",	"teddybear",	"cup",	"dog",	"apple",	"lamp",	"car",	"flower",	"banana",	"cookie",	"dog",	"apple",	"bird",	"teddybear",	"cup",	"bicycle",	"cat"
                                 ];
     } else if (list === 2) {
-        var items_inhibition = ["cup",	"bird",	"lamp"
-                                //,	"cookie",	"flower",	"cat",	"bicycle",	"banana",	"teddybear",	"dog",	"car",	"apple"
+        var items_inhibition = ["cup",	"bird",	"lamp",	"cookie",	"flower",	"cat",	"bicycle",	"banana",	"teddybear",	"dog",	"car",	"apple"
                                ];
-        var items_negation = ["cookie",	"flower"
-                              //,	"cat",	"bicycle",	"lamp",	"bird",	"banana",	"dog",	"apple",	"car",	"teddybear",	"cup",	"apple",	"cookie",	"banana",	"dog",	"bird",	"bicycle",	"cup",	"lamp",	"car",	"cat",	"flower",	"teddybear",	"lamp",	"flower",	"bicycle",	"dog",	"cup",	"apple",	"cookie",	"teddybear",	"bird",	"cat",	"banana",	"car",	"car",	"banana",	"dog",	"teddybear",	"cup",	"bird",	"apple",	"lamp",	"cat",	"cookie",	"bicycle",	"flower",	"banana",	"flower",	"bird",	"apple",	"lamp",	"bicycle",	"cup",	"car",	"cookie",	"teddybear",	"cat",	"dog"
+        var items_negation = ["cookie",	"flower",	"cat",	"bicycle",	"lamp",	"bird",	"banana",	"dog",	"apple",	"car",	"teddybear",	"cup",	"apple",	"cookie",	"banana",	"dog",	"bird",	"bicycle",	"cup",	"lamp",	"car",	"cat",	"flower",	"teddybear",	"lamp",	"flower",	"bicycle",	"dog",	"cup",	"apple",	"cookie",	"teddybear",	"bird",	"cat",	"banana",	"car",	"car",	"banana",	"dog",	"teddybear",	"cup",	"bird",	"apple",	"lamp",	"cat",	"cookie",	"bicycle",	"flower",	"banana",	"flower",	"bird",	"apple",	"lamp",	"bicycle",	"cup",	"car",	"cookie",	"teddybear",	"cat",	"dog"
                              ];
-        var items_implicature = ["cat",	"bicycle"
-                                 //,	"cup",	"teddybear",	"bird",	"apple",	"dog",	"cookie",	"banana",	"flower",	"car",	"lamp",	"apple",	"dog",	"cup",	"teddybear",	"bicycle",	"flower",	"cat",	"car",	"lamp",	"banana",	"bird",	"cookie",	"dog",	"lamp",	"cookie",	"car",	"cup",	"bicycle",	"teddybear",	"flower",	"cat",	"apple",	"banana",	"bird",	"teddybear",	"cup",	"car",	"banana",	"lamp",	"apple",	"cookie",	"cat",	"bird",	"flower",	"dog",	"bicycle",	"bird",	"flower",	"car",	"lamp",	"bicycle",	"dog",	"teddybear",	"cookie",	"cat",	"apple",	"cup",	"banana"
+        var items_implicature = ["cat",	"bicycle",	"cup",	"teddybear",	"bird",	"apple",	"dog",	"cookie",	"banana",	"flower",	"car",	"lamp",	"apple",	"dog",	"cup",	"teddybear",	"bicycle",	"flower",	"cat",	"car",	"lamp",	"banana",	"bird",	"cookie",	"dog",	"lamp",	"cookie",	"car",	"cup",	"bicycle",	"teddybear",	"flower",	"cat",	"apple",	"banana",	"bird",	"teddybear",	"cup",	"car",	"banana",	"lamp",	"apple",	"cookie",	"cat",	"bird",	"flower",	"dog",	"bicycle",	"bird",	"flower",	"car",	"lamp",	"bicycle",	"dog",	"teddybear",	"cookie",	"cat",	"apple",	"cup",	"banana"
                                 ];
     } 
     var items = items_inhibition.concat(items_negation, items_implicature);
