@@ -72,16 +72,18 @@ if (turk.previewMode != true) {
 // MAIN EXPERIMENT
 var experiment = {
 
-	gender: [],
-	age: "",
-	nativeLanguage: "",
-	comments: "",
+	demo: {
+		gender: [],
+		age: "",
+		nativeLanguage: "",
+		comments: ""
+	},
 
-	subid: "",
+	subid: turk.workerId,
 	//inputed at beginning of experiment
 	trialnum: 0,
 	//trial number
-	list: parseInt(cond), 
+	list: parseInt(cond),
 	//list number
 	order: "",
 	//order (0, 1, 2, 3, 4, or 5; refer to neginhib_utils.js)
@@ -120,7 +122,7 @@ var experiment = {
 	},
 
 	playTest: function() {
-		$("#test_player")[0].play();  //FIXME: Use audio sprite
+		$("#test_player")[0].play(); //FIXME: Use audio sprite
 	},
 
 	checkSoundTest: function() {
@@ -141,14 +143,14 @@ var experiment = {
 		showSlide("practiceKeyLeft");
 
 		//Set up experiment parameters before starting games
-		
-        //order
-        experiment.order = random(6)+1;
-        //experiment.order = 1; //testing
+
+		//order
+		experiment.order = random(6) + 1;
+		//experiment.order = 1; //testing
 
 		gameList = makeGameList(experiment.order);
 
-        items = makeSetList(experiment.list);     
+		items = makeSetList(experiment.list);
 
 		//Note: I moved the audio "preloading" here; we shoudld double-check that it still works
 		audioSprite.play();
@@ -386,16 +388,16 @@ var experiment = {
 			var gen = $("input:radio[name=genderButton]:checked").val();
 			var ag = $("#ageRange").val();
 			var lan = $("#nativeLanguage").val();
-			var comm = $("#comments").val();
+			var comm = $("#commentQ").val();
 
 			if (gen == "" | ag == "" | lan == "") {
 				alert("Please answer all of the questions");
 			} else {
 
-				experiment.gender = gen
-				experiment.age = ag
-				experiment.nativeLanguage = lan
-				experiment.comments = comm
+				experiment.demo.gender = gen
+				experiment.demo.age = ag
+				experiment.demo.nativeLanguage = lan
+				experiment.demo.comments = comm
 
 				experiment.end();
 			}
@@ -406,7 +408,7 @@ var experiment = {
 	end: function() {
 		setTimeout(function() {
 			$("#stage").fadeOut();
-			turk.submit(experiment)
+			turk.submit(experiment.demo, true)
 		}, normalPause);
 		showSlide("finish");
 		document.body.style.background = "black";
