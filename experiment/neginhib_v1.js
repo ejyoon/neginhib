@@ -307,7 +307,7 @@ var experiment = {
 						$(document.getElementById(picID)).css('border', "none");
 						$(document.getElementById(picID)).css('margin', "0px");
 
-						$("#stage").fadeIn();
+						$("#stage").show();
 
 						//reactivate clicks only after a little bit after the prompt's word
 						setTimeout(function() {
@@ -316,7 +316,7 @@ var experiment = {
 
 						startTime = (new Date()).getTime();
 						playPrompt(wordList[0]);
-					}, normalPause);
+					}, 200);
 				}
 			}, timeafterClick);
 		});
