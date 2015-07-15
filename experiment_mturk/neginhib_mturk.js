@@ -371,6 +371,7 @@ var experiment = {
 	},
 
 	background: function() {
+		document.body.style.background = "white";
 
 		//undo spacebar disable
 		window.onkeydown = function(e) {}
@@ -378,27 +379,18 @@ var experiment = {
 		$("#gender").trigger("reset");
 		$("#age").trigger("reset");
 		$("#language").trigger("reset");
-		$("#aboutQ").trigger("reset");
-		$("#commentQ").trigger("reset");
+		$("#comments").trigger("reset");
 		showSlide("askInfo");
 
 		$("#endButton").click(function() {
 			var gen = $("input:radio[name=genderButton]:checked").val();
 			var ag = $("#ageRange").val();
 			var lan = $("#nativeLanguage").val();
-			var comm = $("#commentQ").val();
+			var comm = $("#comments").val();
 
 			if (gen == "" | ag == "" | lan == "") {
 				alert("Please answer all of the questions");
 			} else {
-
-				var subject_string = subjectID + "," + gen + "," + ag + "," + lan + "," + comm + "\n";
-
-				$.post("https://langcog.stanford.edu/cgi-bin/AEN2/NEGPAD_felicity_v2/negpad_subject.php", {
-					postsubject_string: subject_string
-
-				})
-
 
 				experiment.gender = gen
 				experiment.age = ag
@@ -414,6 +406,7 @@ var experiment = {
 	end: function() {
 		setTimeout(function() {
 			$("#stage").fadeOut();
+			turk.submit(experiment)
 		}, normalPause);
 		showSlide("finish");
 		document.body.style.background = "black";

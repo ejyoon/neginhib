@@ -108,6 +108,56 @@
       <div id="filler"> </div> <!--dynamically built in javascript-->
     </div>
 
+    <div class="slide" id="askInfo">
+    
+        <p><b> Please answer a few questions about yourself. </b> </p>
+    <br>
+
+    <form name="gender" id="gender">
+    <b>Gender:</b> &nbsp;&nbsp;
+    <input type="radio" name="genderButton" value="M" />Male &nbsp;&nbsp;
+    <input type="radio" name="genderButton" value="F" />Female &nbsp;&nbsp;
+    <input type="radio" name="genderButton" value="Decline" />Decline to answer
+    </form>
+    
+    <br>
+
+    <form name="age" id="age">
+    <b>Age range:</b> &nbsp;&nbsp;
+    <select name="ageRange" id="ageRange">
+    <option value=17>Under 18</option>
+    <option value=25>18-25</option>
+    <option value=35>26-35</option>
+    <option value=45>36-45</option>
+    <option value=55>46-55</option>
+    <option value=65>56-65</option>
+    <option value=66>Above 66</option>
+    <option value=NA>Decline to answer</options>
+    </select>
+    </form>
+
+    <br>
+    
+    <form name="language" id="language">
+    <b>What is your native language? </b>&nbsp;&nbsp;
+    <input type="text" id="nativeLanguage"/>
+    </form>
+
+    <br>
+
+    <br>
+
+    <form name="comment" id="comments">
+    <b>Please leave any comments or suggestions regarding this HIT:</b>
+    <br>
+    <textarea id="commentQ" rows=5 cols=75></textarea>
+    </form>
+
+
+    <button type="button" id="endButton">Submit</button>
+    
+</div>
+
     <div class="slide" id="finish">
       <img src="images/finish.png" alt="FINISHED!">
     </div>
