@@ -157,7 +157,7 @@ var experiment = {
 	// MAIN DISPLAY FUNCTION
 	next: function(game) {
 
-		document.body.style.background = "black";
+		document.body.style.background = "LightGray";
 
 		var gameItems = makeItemList(game);
 		var trialTypes = makeTrialTypes(game);
