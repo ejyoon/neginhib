@@ -181,13 +181,21 @@ var experiment = {
 	preStudy: function() {
 		$("#stage").hide();
 		showSlide("prestudy");
+		var already_movedon = 0;
 
 		//$("#prestudy").hide();
-		$('#startButton').bind('click touchstart', function(event) {
+		$(document).keydown(function(event) {
+			if (event.which == 32 & !already_movedon) {
+//				experiment.preStudy();
+//				already_movedon = 1;
+//			}
+//		})		
+//        $('#startButton').bind('click touchstart', function(event) {
 			setTimeout(function() {
-				experiment.next(gameList[gameCounter]);
+			already_movedon = 1;	        
+                experiment.next(gameList[gameCounter]);
 			}, normalPause);
-		})
+		}})
 	},
 
 	// MAIN DISPLAY FUNCTION
