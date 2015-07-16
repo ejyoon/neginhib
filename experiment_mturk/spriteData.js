@@ -298,5 +298,10 @@ var spriteData = {
 		start: 4.191,
 		onset: 4.191,
 		length: 0.33
-	}
+	},
+    lion: {
+		start: 36.650,
+		onset: 36.650,
+		length: 0.9    
+    }
 };

@@ -16,7 +16,7 @@ var cond = xmlHttp.responseText;
 var gameCounter = 0;
 var numGames = 2; //3 games (javascript indexing starts at 0)
 
-var testWord = "fixme"
+var testWord = "lion"
 
 //Number of trials per game
 var numInhibTrials = 12;
@@ -122,7 +122,8 @@ var experiment = {
 	},
 
 	playTest: function() {
-		$("#test_player")[0].play();  //FIXME: Use audio sprite
+		//$("#test_player")[0].play();  //FIXME: Use audio sprite
+        playPrompt("lion");
 	},
 
 	checkSoundTest: function() {
