@@ -72,18 +72,16 @@ if (turk.previewMode != true) {
 // MAIN EXPERIMENT
 var experiment = {
 
-	demo: {
-		gender: [],
-		age: "",
-		nativeLanguage: "",
-		comments: ""
-	},
+	gender: [],
+	age: "",
+	nativeLanguage: "",
+	comments: "",
 
-	subid: turk.workerId,
+	subid: "",
 	//inputed at beginning of experiment
 	trialnum: 0,
 	//trial number
-	list: parseInt(cond),
+	list: parseInt(cond), 
 	//list number
 	order: "",
 	//order (0, 1, 2, 3, 4, or 5; refer to neginhib_utils.js)
@@ -97,6 +95,8 @@ var experiment = {
 	//whether the picture on the left is target or distractor
 	pic2type: "",
 	//whether the picture on the right is target or distractor
+    key: "",
+    //which key was pressed, Q or P
 	side: "",
 	//whether the child picked the left (L) or the right (R) picture
 	chosenpic: "",
@@ -122,7 +122,7 @@ var experiment = {
 	},
 
 	playTest: function() {
-		$("#test_player")[0].play(); //FIXME: Use audio sprite
+		$("#test_player")[0].play();  //FIXME: Use audio sprite
 	},
 
 	checkSoundTest: function() {
@@ -143,16 +143,16 @@ var experiment = {
 		showSlide("practiceKeyLeft");
 
 		//Set up experiment parameters before starting games
-
-		//order
-		experiment.order = random(6) + 1;
-		//experiment.order = 1; //testing
+		
+        //order
+        experiment.order = random(6)+1;
+        //experiment.order = 1; //testing
 
 		gameList = makeGameList(experiment.order);
 
-		items = makeSetList(experiment.list);
+        items = makeSetList(experiment.list);     
 
-		//Note: I moved the audio "preloading" here; we shoudld double-check that it still works
+		//Note: I moved the audio "preloading" here; we should double-check that it still works
 		audioSprite.play();
 		audioSprite.pause();
 
@@ -239,12 +239,145 @@ var experiment = {
 		var startTime = (new Date()).getTime();
 		playPrompt(wordList[0]);
         
-//	$(document).keydown(function(event) {    // $('.pic').bind('click touchstart', function(event) {
+        //click disabled for the first slide
+        var clickDisabled = true;
+		setTimeout(function() {
+			clickDisabled = false;
+		}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 + 300);
 
-//	    var keyCode = event.which
-//	    if (keyCode == 81 || keyCode == 80 ) {
-//		$(document).unbind("keydown")
-//		var endTime = (new Date()).getTime()
+        // keydown event
+	   $(document).keydown(function(event) {    
+        if (clickDisabled) return;
+
+	    var keyCode = event.which
+	    if (keyCode == 81 || keyCode == 80 ) {
+		$(document).unbind("keydown")
+		var endTime = (new Date()).getTime()
+
+        //disable subsequent clicks once the participant has made their choice
+        clickDisabled = true;
+
+			//time the participant clicked - the time the audio began - the amount of time between the beginning of the audio and the 
+			//onset of the word 
+			experiment.reactiontime = (new Date()).getTime() - startTime - (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000;
+
+			experiment.trialnum = counter;
+			experiment.word = wordList[0];
+
+			//get whether left or right pictures were target or distractor
+			if (experiment.pic1 === experiment.word) {
+				experiment.pic1type = "target";
+			} else {
+				experiment.pic1type = "distractor";
+			}
+			if (experiment.pic2 === experiment.word) {
+				experiment.pic2type = "target";
+			} else {
+				experiment.pic2type = "distractor";
+			}
+
+
+		// figure out if they chose left or right
+		experiment.key = (keyCode == 80) ? "P" : "Q"
+		experiment.chosenpic = (keyCode == 80) ? experiment.pic2 : experiment.pic1 
+        experiment.side = (keyCode == 80) ? "R" : "L" 
+        
+        if (experiment.side === "L") {
+            var picID = "leftPic";
+        } else if (experiment.side === "R") {
+            var picID = "rightPic";
+        }
+        
+        // whether participant chose the correct target
+			if (experiment.chosenpic === experiment.word) {
+				experiment.response = "Y";
+			} else {
+				experiment.response = "N"
+			}
+
+			//Was this a practice or a test trial?
+			if (counter < 3) {
+				experiment.practice = "practice"
+			} else {
+				experiment.practice = "test"
+			}
+
+			//FIXME: Get this info
+			//what kind of trial was this?
+			//experiment.trialtype = getTrialType(experiment.trialnum);
+			//experiment.phase = getPhase(experiment.trialnum);
+
+			//Add one to the counter and process the data to be saved; the child completed another "round" of the experiment
+			experiment.processOneRow();
+			counter++;
+
+            $(document.getElementById(picID)).css('margin', "-8px");
+			$(document.getElementById(picID)).css('border', "solid 8px green");
+
+			//remove the pictures from the image array that have been used, and the word from the wordList that has been used
+			imageArray.splice(0, 2);
+			wordList.splice(0, 1);
+
+			var reverse = random(2);
+			experiment.pic1 = imageArray[0];
+			experiment.pic2 = imageArray[1];
+			if (reverse == 1) {
+				experiment.pic1 = imageArray[1];
+				experiment.pic2 = imageArray[0];
+			}
+
+			setTimeout(function() {
+				$("#stage").hide();
+				//there are no more trials for the experiment to run
+				if (counter === numTrials + 1) {
+					if (gameCounter === numGames) {
+						experiment.background();
+					} else {
+						gameCounter++;
+						document.body.style.background = "white";
+						experiment.preStudy();
+					}
+				} else {
+
+					//move on to the next round after either the normal amount of time between critical rounds, or after 
+					//the filler has occurred
+					setTimeout(function() {
+						document.getElementById("leftPic").src = "neginhib_objects/" + experiment.pic1 + ".png";
+						document.getElementById("rightPic").src = "neginhib_objects/" + experiment.pic2 + ".png";
+
+						//to make word display visible (as an alternative to sound), uncomment just change background of display to white
+						$(document.getElementById(picID)).css('border', "none");
+						$(document.getElementById(picID)).css('margin', "0px");
+
+						$("#stage").show();
+
+                        //reactivate clicks only after a little bit after the prompt's word
+						setTimeout(function() {
+							clickDisabled = false;
+						}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 + 300);
+
+						startTime = (new Date()).getTime();
+						playPrompt(wordList[0]);
+					}, 200);
+				}
+			}, timeafterClick);
+		};
+                
+  })
+    },
+
+//		//click disable for the first slide
+//		var clickDisabled = true;
+//		setTimeout(function() {
+//			clickDisabled = false;
+//		}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 + 300);
+//
+//		$('.pic').bind('click touchstart', function(event) {
+//
+//			if (clickDisabled) return;
+//
+//			//disable subsequent clicks once the participant has made their choice
+//			clickDisabled = true;
 //
 //			//time the participant clicked - the time the audio began - the amount of time between the beginning of the audio and the 
 //			//onset of the word 
@@ -265,12 +398,17 @@ var experiment = {
 //				experiment.pic2type = "distractor";
 //			}
 //
+//			//Was the picture clicked on the right or the left?
+//			var picID = $(event.currentTarget).attr('id');
+//			if (picID === "leftPic") {
+//				experiment.side = "L";
+//				experiment.chosenpic = experiment.pic1;
+//			} else {
+//				experiment.side = "R";
+//				experiment.chosenpic = experiment.pic2;
+//			}
 //
-//		// figure out if they chose true or false
-//		key = (keyCode == 80) ? "right" : "left"
-//		chosenpic = (keyCode == 80) ? experiment.pic2 : experiment.pic1 
-//        
-//        // whether participant chose the correct target
+//			// Whether the response was correct
 //			if (experiment.chosenpic === experiment.word) {
 //				experiment.response = "Y";
 //			} else {
@@ -333,126 +471,18 @@ var experiment = {
 //
 //						$("#stage").show();
 //
-//	})
-//  },
-
-		//click disable for the first slide
-		var clickDisabled = true;
-		setTimeout(function() {
-			clickDisabled = false;
-		}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 + 300);
-
-		$('.pic').bind('click touchstart', function(event) {
-
-			if (clickDisabled) return;
-
-			//disable subsequent clicks once the participant has made their choice
-			clickDisabled = true;
-
-			//time the participant clicked - the time the audio began - the amount of time between the beginning of the audio and the 
-			//onset of the word 
-			experiment.reactiontime = (new Date()).getTime() - startTime - (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000;
-
-			experiment.trialnum = counter;
-			experiment.word = wordList[0];
-
-			//get whether left or right pictures were target or distractor
-			if (experiment.pic1 === experiment.word) {
-				experiment.pic1type = "target";
-			} else {
-				experiment.pic1type = "distractor";
-			}
-			if (experiment.pic2 === experiment.word) {
-				experiment.pic2type = "target";
-			} else {
-				experiment.pic2type = "distractor";
-			}
-
-			//Was the picture clicked on the right or the left?
-			var picID = $(event.currentTarget).attr('id');
-			if (picID === "leftPic") {
-				experiment.side = "L";
-				experiment.chosenpic = experiment.pic1;
-			} else {
-				experiment.side = "R";
-				experiment.chosenpic = experiment.pic2;
-			}
-
-			// Whether the response was correct
-			if (experiment.chosenpic === experiment.word) {
-				experiment.response = "Y";
-			} else {
-				experiment.response = "N"
-			}
-
-			//Was this a practice or a test trial?
-			if (counter < 3) {
-				experiment.practice = "practice"
-			} else {
-				experiment.practice = "test"
-			}
-
-			//FIXME: Get this info
-			//what kind of trial was this?
-			//experiment.trialtype = getTrialType(experiment.trialnum);
-			//experiment.phase = getPhase(experiment.trialnum);
-
-			//Add one to the counter and process the data to be saved; the child completed another "round" of the experiment
-			experiment.processOneRow();
-			counter++;
-
-			$(document.getElementById(picID)).css('margin', "-8px");
-			$(document.getElementById(picID)).css('border', "solid 8px green");
-
-			//remove the pictures from the image array that have been used, and the word from the wordList that has been used
-			imageArray.splice(0, 2);
-			wordList.splice(0, 1);
-
-			var reverse = random(2);
-			experiment.pic1 = imageArray[0];
-			experiment.pic2 = imageArray[1];
-			if (reverse == 1) {
-				experiment.pic1 = imageArray[1];
-				experiment.pic2 = imageArray[0];
-			}
-
-			setTimeout(function() {
-				$("#stage").hide();
-				//there are no more trials for the experiment to run
-				if (counter === numTrials + 1) {
-					if (gameCounter === numGames) {
-						experiment.background();
-					} else {
-						gameCounter++;
-						document.body.style.background = "white";
-						experiment.preStudy();
-					}
-				} else {
-
-					//move on to the next round after either the normal amount of time between critical rounds, or after 
-					//the filler has occurred
-					setTimeout(function() {
-						document.getElementById("leftPic").src = "neginhib_objects/" + experiment.pic1 + ".png";
-						document.getElementById("rightPic").src = "neginhib_objects/" + experiment.pic2 + ".png";
-
-						//to make word display visible (as an alternative to sound), uncomment just change background of display to white
-						$(document.getElementById(picID)).css('border', "none");
-						$(document.getElementById(picID)).css('margin', "0px");
-
-						$("#stage").show();
-
-						//reactivate clicks only after a little bit after the prompt's word
-						setTimeout(function() {
-							clickDisabled = false;
-						}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 + 300);
-
-						startTime = (new Date()).getTime();
-						playPrompt(wordList[0]);
-					}, 200);
-				}
-			}, timeafterClick);
-		});
-	},
+//						//reactivate clicks only after a little bit after the prompt's word
+//						setTimeout(function() {
+//							clickDisabled = false;
+//						}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 + 300);
+//
+//						startTime = (new Date()).getTime();
+//						playPrompt(wordList[0]);
+//					}, 200);
+//				}
+//			}, timeafterClick);
+//		});
+//	},
 
 	//concatenates all experimental variables into a string which represents one "row" of data in the eventual csv, to live in the server
 	processOneRow: function() {
@@ -485,16 +515,16 @@ var experiment = {
 			var gen = $("input:radio[name=genderButton]:checked").val();
 			var ag = $("#ageRange").val();
 			var lan = $("#nativeLanguage").val();
-			var comm = $("#commentQ").val();
+			var comm = $("#comments").val();
 
 			if (gen == "" | ag == "" | lan == "") {
 				alert("Please answer all of the questions");
 			} else {
 
-				experiment.demo.gender = gen
-				experiment.demo.age = ag
-				experiment.demo.nativeLanguage = lan
-				experiment.demo.comments = comm
+				experiment.gender = gen
+				experiment.age = ag
+				experiment.nativeLanguage = lan
+				experiment.comments = comm
 
 				experiment.end();
 			}
@@ -505,7 +535,7 @@ var experiment = {
 	end: function() {
 		setTimeout(function() {
 			$("#stage").fadeOut();
-			turk.submit(experiment.demo, true)
+			turk.submit(experiment)
 		}, normalPause);
 		showSlide("finish");
 		document.body.style.background = "black";
