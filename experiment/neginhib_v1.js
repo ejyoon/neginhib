@@ -29,10 +29,10 @@ var audioSprite = $("#sound_player")[0];
 var handler;
 
 // preload
-var allimages = ["apple_control.png",	"apple_foil.png",	"apple_implic.png",	"apple_inhib.png",	"apple_neg.png",	"apple_pos.png",	"banana_control.png",	"banana_foil.png",	"banana_implic.png",	"banana_inhib.png",	"banana_neg.png",	"banana_pos.png",	"bicycle_control.png",	"bicycle_foil.png",	"bicycle_implic.png",	"bicycle_inhib.png",	"bicycle_neg.png",	"bicycle_pos.png",	"bird_control.png",	"bird_foil.png",	"bird_implic.png",	"bird_inhib.png",	"bird_neg.png",	"bird_pos.png",	"car_control.png",	"car_foil.png",	"car_implic.png",	"car_inhib.png",	"car_neg.png",	"car_pos.png",	"cat_control.png",	"cat_foil.png",	"cat_implic.png",	"cat_inhib.png",	"cat_neg.png",	"cat_pos.png",	"cookie_control.png",	"cookie_foil.png",	"cookie_implic.png",	"cookie_inhib.png",	"cookie_neg.png",	"cookie_pos.png",	"cup_control.png",	"cup_foil.png",	"cup_implic.png",	"cup_inhib.png",	"cup_neg.png",	"cup_pos.png",	"dog_control.png",	"dog_foil.png",	"dog_implic.png",	"dog_inhib.png",	"dog_neg.png",	"dog_pos.png",	"flower_control.png",	"flower_foil.png",	"flower_implic.png",	"flower_inhib.png",	"flower_neg.png",	"flower_pos.png",	"lamp_control.png",	"lamp_foil.png",	"lamp_implic.png",	"lamp_inhib.png",	"lamp_neg.png",	"lamp_pos.png",	"teddybear_control.png",	"teddybear_foil.png",	"teddybear_implic.png",	"teddybear_inhib.png",	"teddybear_neg.png",	"teddybear_pos.png"];
+var allimages = ["apple_control.png", "apple_foil.png", "apple_implic.png", "apple_inhib.png", "apple_neg.png", "apple_pos.png", "banana_control.png", "banana_foil.png", "banana_implic.png", "banana_inhib.png", "banana_neg.png", "banana_pos.png", "bicycle_control.png", "bicycle_foil.png", "bicycle_implic.png", "bicycle_inhib.png", "bicycle_neg.png", "bicycle_pos.png", "bird_control.png", "bird_foil.png", "bird_implic.png", "bird_inhib.png", "bird_neg.png", "bird_pos.png", "car_control.png", "car_foil.png", "car_implic.png", "car_inhib.png", "car_neg.png", "car_pos.png", "cat_control.png", "cat_foil.png", "cat_implic.png", "cat_inhib.png", "cat_neg.png", "cat_pos.png", "cookie_control.png", "cookie_foil.png", "cookie_implic.png", "cookie_inhib.png", "cookie_neg.png", "cookie_pos.png", "cup_control.png", "cup_foil.png", "cup_implic.png", "cup_inhib.png", "cup_neg.png", "cup_pos.png", "dog_control.png", "dog_foil.png", "dog_implic.png", "dog_inhib.png", "dog_neg.png", "dog_pos.png", "flower_control.png", "flower_foil.png", "flower_implic.png", "flower_inhib.png", "flower_neg.png", "flower_pos.png", "lamp_control.png", "lamp_foil.png", "lamp_implic.png", "lamp_inhib.png", "lamp_neg.png", "lamp_pos.png", "teddybear_control.png", "teddybear_foil.png", "teddybear_implic.png", "teddybear_inhib.png", "teddybear_neg.png", "teddybear_pos.png"];
 //for critical trials and fillers
 var images = new Array();
-for (i = 0; i<allimages.length; i++) {
+for (i = 0; i < allimages.length; i++) {
 	images[i] = new Image();
 	images[i].src = "neginhib_objects/" + allimages[i];
 }
@@ -99,12 +99,12 @@ var experiment = {
 		}
 		experiment.list = parseInt(document.getElementById("list").value);
 
-        //order
-        experiment.order = random(6)+1;
-        //experiment.order = 1; //testing
+		//order
+		experiment.order = random(6) + 1;
+		//experiment.order = 1; //testing
 
 		gameList = makeGameList(experiment.order);
-        items = makeSetList(experiment.list);      
+		items = makeSetList(experiment.list);
 		//Note: I moved the audio "preloading" here; we shoudld double-check that it still works
 		audioSprite.play();
 		audioSprite.pause();
@@ -160,8 +160,8 @@ var experiment = {
 		document.body.style.background = "LightGray";
 
 		var gameItems = makeItemList(game);
-		var trialTypes = makeTrialTypes(game);
 		var wordsAndImages = makeWordsAndImages(game, gameItems);
+		var trialTypes = wordsAndImages[3];
 
 		var wordList = wordsAndImages[0];
 		var imageArray = wordsAndImages[1];
@@ -260,10 +260,9 @@ var experiment = {
 				experiment.practice = "test"
 			}
 
-			//FIXME: Get this info
 			//what kind of trial was this?
-			//experiment.trialtype = getTrialType(experiment.trialnum);
-			//experiment.phase = getPhase(experiment.trialnum);
+			experiment.phase = game;
+			experiment.trialtype = trialTypes[counter - 1];
 
 			//Add one to the counter and process the data to be saved; the child completed another "round" of the experiment
 			experiment.processOneRow();
@@ -325,9 +324,9 @@ var experiment = {
 	//concatenates all experimental variables into a string which represents one "row" of data in the eventual csv, to live in the server
 	processOneRow: function() {
 		var dataforRound = experiment.subid;
-        dataforRound += "," + experiment.list 
-		dataforRound += "," + experiment.order 
-        dataforRound += "," + experiment.trialnum + "," + experiment.word;
+		dataforRound += "," + experiment.list
+		dataforRound += "," + experiment.order
+		dataforRound += "," + experiment.trialnum + "," + experiment.word;
 		dataforRound += "," + experiment.pic1 + "," + experiment.pic2;
 		dataforRound += "," + experiment.trialtype + "," + experiment.pic1type + "," + experiment.pic2type;
 		dataforRound += "," + experiment.side + "," + experiment.chosenpic + "," + experiment.response;
