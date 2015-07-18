@@ -147,6 +147,7 @@ makeWordsAndImages = function(game, items) { //input itemList from makeItemList
 	var wordList = [];
 	var imageArray = [];
 	var numInhibTrials = 0;
+	var type = [];
 
 	if (game == "negation" || game == "implicature") {
 		var trialTypes = makeTrialTypes(game);
@@ -156,6 +157,10 @@ makeWordsAndImages = function(game, items) { //input itemList from makeItemList
 		if (game == "inhibition") {
 			var numStay = getRandomInt(minInhib, maxInhib); // how many times should the control be repeated?
 			numInhibTrials = numInhibTrials + numStay + 1;
+			//trial types:
+			var repControl = repeat("control ", numStay);
+			var inhibTrials = repControl.concat("inhib");
+			type = type.concat(inhibTrials);
 			//words:
 			var controlString = items[i] + "_pos "; //what is the control word?
 			var posArray = repeat(controlString, numStay); //repeat the control string
@@ -166,6 +171,8 @@ makeWordsAndImages = function(game, items) { //input itemList from makeItemList
 			var thisImList = repeat(imString, numStay + 1);
 			imageArray = imageArray.concat(thisImList); 
 		} else if (game == "negation") {
+			//trial type: 
+			type.push(trialTypes[i]);
 			//words: 
 			if (trialTypes[i] == "positive") {
 				wordList.push(items[i] + "_pos");
@@ -177,6 +184,8 @@ makeWordsAndImages = function(game, items) { //input itemList from makeItemList
 			imageArray = imageArray.concat(thisImList);
 
 		} else if (game == "implicature") {
+			//trial type: 
+			type.push(trialTypes[i]);
 			//words: 
 			if (trialTypes[i] == "implicature") {
 				wordList.push(items[i] + "_implic");
@@ -194,7 +203,7 @@ makeWordsAndImages = function(game, items) { //input itemList from makeItemList
 		}
 	}
 
-	return [wordList, imageArray, numInhibTrials];
+	return [wordList, imageArray, numInhibTrials, type];
 }
 
 
