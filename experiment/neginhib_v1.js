@@ -341,7 +341,8 @@ var experiment = {
 		dataforRound += "," + experiment.order
 		dataforRound += "," + experiment.trialnum + "," + experiment.word;
 		dataforRound += "," + experiment.pic1 + "," + experiment.pic2;
-		dataforRound += "," + experiment.trialtype + "," + experiment.pic1type + "," + experiment.pic2type;
+		dataforRound += "," + experiment.phase + "," +  experiment.trialtype;
+		dataforRound += "," + experiment.pic1type + "," + experiment.pic2type;
 		dataforRound += "," + experiment.side + "," + experiment.chosenpic + "," + experiment.response;
 		dataforRound += "," + experiment.date + "," + experiment.timestamp + "," + experiment.reactiontime + "\n";
 		$.post("https://langcog.stanford.edu/cgi-bin/EJY/neginhib/neginhibstudysave.php", {
