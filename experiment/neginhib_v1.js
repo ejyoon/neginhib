@@ -112,34 +112,100 @@ var experiment = {
 	},
 
 	//We start with a training game to make sure children know how to use the iPad
-	training: function() {
+	training: function(dotgame) {
+		var allDots = ["dot_1", "dot_2", "dot_3", "dot_4", "dot_5", 
+						"dot_smiley1", "dot_smiley2", "dot_smiley3", 
+						"dot_smiley4", "dot_smiley5"];
 		var xcounter = 0;
 		var dotCount = 5;
+
+		//preload sound
+		if (dotgame === 0) {
+			audioSprite.play();
+			audioSprite.pause();
+		}
 
 		var dotx = [];
 		var doty = [];
 
-		for (i = 0; i < dotCount; i++) {
-			createDot(dotx, doty, i);
+		if (dotgame === 0) {
+			for (i = 0; i < dotCount; i++) {
+				createDot(dotx, doty, i, "");
+			}
+		} else {
+			for (i = 0; i < dotCount; i++) {
+				createDot(dotx, doty, i, "smiley");
+			}
 		}
-		showSlide("training")
-		$('.dot').one('click touchstart', function(event) {
-			var dotID = $(event.currentTarget).attr('id');
-			document.getElementById(dotID).src = "dots/x.jpg";
-			xcounter++;
-			if (xcounter === dotCount) {
-				training.removeChild(dot_1);
+		showSlide("training");
+		$('.dot').bind('click touchstart', function(event) {
+	    	var dotID = $(event.currentTarget).attr('id');
+
+	    	//only count towards completion clicks on dots that have not yet been clicked
+	    	if (allDots.indexOf(dotID) === -1) {
+	    		return;
+	    	}
+	    	allDots.splice(allDots.indexOf(dotID), 1);
+	    	document.getElementById(dotID).src = "dots/x.jpg";
+	    	xcounter++
+	    	if (xcounter === dotCount) {
+                training.removeChild(dot_1);
 				training.removeChild(dot_2);
 				training.removeChild(dot_3);
 				training.removeChild(dot_4);
 				training.removeChild(dot_5);
-				setTimeout(function() {
-					$("#training").hide();
-					showSlide("dotGame");
-				}, normalPause)
+
+	    		setTimeout(function () {
+	    			$("#training").hide();
+	    			if (dotgame === 0) {		
+	    				//hide old x marks before game begins again
+	    				var dotID;
+	    				for (i = 1; i <= dotCount; i++) {
+	    					dotID = "dot_" + i;
+	    					training.removeChild(document.getElementById(dotID));
+	    				}
+						experiment.training();
+						dotgame++; 
+					} else {
+						//document.body.style.background = "black";
+						setTimeout(function() {
+							showSlide("dotGame");
+							//experiment.next();
+						}, normalPause);
+					}
+				}, normalPause);
 			}
-		})
+	    });	   
 	},
+
+//	training: function() {
+//		var xcounter = 0;
+//		var dotCount = 5;
+//
+//		var dotx = [];
+//		var doty = [];
+//
+//		for (i = 0; i < dotCount; i++) {
+//			createDot(dotx, doty, i);
+//		}
+//		showSlide("training")
+//		$('.dot').bind('click touchstart', function(event) {
+//			var dotID = $(event.currentTarget).attr('id');
+//			document.getElementById(dotID).src = "dots/x.jpg";
+//			xcounter++;
+//			if (xcounter === dotCount) {
+//				training.removeChild(dot_1);
+//				training.removeChild(dot_2);
+//				training.removeChild(dot_3);
+//				training.removeChild(dot_4);
+//				training.removeChild(dot_5);
+//				setTimeout(function() {
+//					$("#training").hide();
+//					showSlide("dotGame");
+//				}, normalPause)
+//			}
+//		})
+//	},
 
 	preStudy: function() {
 		$("#stage").hide();
@@ -268,8 +334,8 @@ var experiment = {
 			experiment.processOneRow();
 			counter++;
 
-			$(document.getElementById(picID)).css('margin', "-8px");
-			$(document.getElementById(picID)).css('border', "solid 8px green");
+//			$(document.getElementById(picID)).css('margin', "-8px");
+//			$(document.getElementById(picID)).css('border', "solid 8px green");
 
 			//remove the pictures from the image array that have been used, and the word from the wordList that has been used
 			imageArray.splice(0, 2);
@@ -303,8 +369,8 @@ var experiment = {
 						document.getElementById("rightPic").src = "neginhib_objects/" + experiment.pic2 + ".png";
 
 						//to make word display visible (as an alternative to sound), uncomment just change background of display to white
-						$(document.getElementById(picID)).css('border', "none");
-						$(document.getElementById(picID)).css('margin', "0px");
+//						$(document.getElementById(picID)).css('border', "none");
+//						$(document.getElementById(picID)).css('margin', "0px");
 
 						$("#stage").show();
 
