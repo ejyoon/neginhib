@@ -255,7 +255,9 @@ var experiment = {
 		var clickDisabled = true;
 		setTimeout(function() {
 			clickDisabled = false;
-		}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 + 300);
+		}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000
+                  // + 300
+                  );
 
 		// keydown event
 		$(document).keydown(function(event) {
@@ -365,7 +367,9 @@ var experiment = {
 							//reactivate clicks only after a little bit after the prompt's word
 							setTimeout(function() {
 								clickDisabled = false;
-							}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 + 300);
+							}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000
+                                      // + 300
+                                      );
 
 							startTime = (new Date()).getTime();
 							playPrompt(wordList[0]);
