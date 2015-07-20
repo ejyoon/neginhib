@@ -107,7 +107,7 @@ var spriteData = {
 	banana_neg: {
 		start: 18.376,
 		onset: 18.631,
-		length: 0.674
+		length: 0.725
 	},
 	banana_inhib: { // cookie
 		start: 8.209,
