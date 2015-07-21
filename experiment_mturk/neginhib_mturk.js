@@ -13,6 +13,11 @@ var cond = xmlHttp.responseText;
 
 // ---------------- PARAMETERS ------------------
 
+//disable the spacebar (prevents it from activating browser shortcuts e.g. "scroll down")
+window.onkeydown = function(e) {
+	return !(e.keyCode == 32);
+}
+
 var gameCounter = 0;
 var numGames = 2; //3 games (javascript indexing starts at 0)
 
