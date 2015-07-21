@@ -61,14 +61,20 @@ showSlide("instructions");
 
 //The button is disabled until all of the images are preloaded
 //Button is also disabled if turk is in preview mode
-$("#startButton").attr("disabled", true);
-if (turk.previewMode != true) {
-	$("#pleaseWait").html("Please wait...");
-	$(window).load(function() {
-		$("#startButton").attr("disabled", false);
-		$("#pleaseWait").html("");
-	})
+$("#beforeStudy").attr("disabled", true);
+if (isChrome = !!window.chrome == false) {
+	$("#pleaseWait").html("You must use the Google Chrome Browser to take this HIT.");
+} else {
+	$("#pleaseWait").html("Please accept this HIT to continue");
+	if (turk.previewMode != true) {
+		$("#pleaseWait").html("Please wait...");
+		$(window).load(function() {
+			$("#beforeStudy").attr("disabled", false);
+			$("#pleaseWait").html("");
+		})
+	}
 }
+
 // MAIN EXPERIMENT
 var experiment = {
 
@@ -254,10 +260,10 @@ var experiment = {
 		//click disabled for the first slide
 		var clickDisabled = true;
 		setTimeout(function() {
-			clickDisabled = false;
-		}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000
-                  // + 300
-                  );
+				clickDisabled = false;
+			}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000
+			// + 300
+		);
 
 		// keydown event
 		$(document).keydown(function(event) {
@@ -366,10 +372,10 @@ var experiment = {
 
 							//reactivate clicks only after a little bit after the prompt's word
 							setTimeout(function() {
-								clickDisabled = false;
-							}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000
-                                      // + 300
-                                      );
+									clickDisabled = false;
+								}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000
+								// + 300
+							);
 
 							startTime = (new Date()).getTime();
 							playPrompt(wordList[0]);
@@ -388,7 +394,7 @@ var experiment = {
 		dataforRound += "," + experiment.order
 		dataforRound += "," + experiment.trialnum + "," + experiment.word;
 		dataforRound += "," + experiment.pic1 + "," + experiment.pic2;
-		dataforRound += "," + experiment.phase + "," +  experiment.trialtype;
+		dataforRound += "," + experiment.phase + "," + experiment.trialtype;
 		dataforRound += "," + experiment.pic1type + "," + experiment.pic2type;
 		dataforRound += "," + experiment.side + "," + experiment.chosenpic + "," + experiment.response;
 		dataforRound += "," + experiment.date + "," + experiment.timestamp + "," + experiment.reactiontime + "\n";
