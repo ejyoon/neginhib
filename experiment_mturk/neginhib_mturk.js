@@ -19,9 +19,9 @@ var numGames = 2; //3 games (javascript indexing starts at 0)
 var testWord = "lion"
 
 //Number of trials per game
-var numInhibTrials = 12;
-var numNegTrials = 60;
-var numImplicTrials = 60;
+var numInhibTrials = 24;
+var numNegTrials = 120;
+var numImplicTrials = 120;
 
 //For inhibition game, number of "control" trials before inhibition trial
 var minInhib = 4;
