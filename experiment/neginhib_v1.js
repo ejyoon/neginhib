@@ -44,7 +44,6 @@ for (i = 0; i < allimages.length; i++) {
 // FIXME list 2: 
 // var items = // opposite of list 1 items -- thus, if list 1 had apple, list 2 would have orange.
 
-
 showSlide("instructions");
 // MAIN EXPERIMENT
 var experiment = {
@@ -221,8 +220,7 @@ var experiment = {
 		var clickDisabled = true;
 		setTimeout(function() {
 			clickDisabled = false;
-		}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 
-                  // + 300
+		}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 + 300
                   );
 
 		$('.pic').bind('click touchstart', function(event) {
@@ -326,13 +324,12 @@ var experiment = {
 						//reactivate clicks only after a little bit after the prompt's word
 						setTimeout(function() {
 							clickDisabled = false;
-						}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 
-                                   //+ 300
+						}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 + 300
                                   );
 
 						startTime = (new Date()).getTime();
 						playPrompt(wordList[0]);
-					}, 200);
+					}, 700);
 				}
 			}, timeafterClick);
 		});
