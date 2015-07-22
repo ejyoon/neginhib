@@ -90,7 +90,7 @@ var experiment = {
 		comments: ""
 	},
 
-	subid: "",
+	subid: turk.workerId,
 	//inputed at beginning of experiment
 	trialnum: 0,
 	//trial number
