@@ -159,7 +159,14 @@ var experiment = {
 
 		//$("#prestudy").hide();
 		$('#startButton').html(gameList[gameCounter])
+
+		//allow clicks 
+		var clickDisabled = false;
+
 		$('#startButton').bind('click touchstart', function(event) {
+			//disable clicks
+			if (clickDisabled) return;
+			clickDisabled = true;
 			setTimeout(function() {
 				experiment.next(gameList[gameCounter]);
 			}, normalPause);
@@ -220,8 +227,7 @@ var experiment = {
 		var clickDisabled = true;
 		setTimeout(function() {
 			clickDisabled = false;
-		}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 + 300
-                  );
+		}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 + 300);
 
 		$('.pic').bind('click touchstart', function(event) {
 
@@ -281,8 +287,8 @@ var experiment = {
 			experiment.processOneRow();
 			counter++;
 
-//			$(document.getElementById(picID)).css('margin', "-8px");
-//			$(document.getElementById(picID)).css('border', "solid 8px green");
+			//			$(document.getElementById(picID)).css('margin', "-8px");
+			//			$(document.getElementById(picID)).css('border', "solid 8px green");
 
 			//remove the pictures from the image array that have been used, and the word from the wordList that has been used
 			imageArray.splice(0, 2);
@@ -316,16 +322,15 @@ var experiment = {
 						document.getElementById("rightPic").src = "neginhib_objects/" + experiment.pic2 + ".png";
 
 						//to make word display visible (as an alternative to sound), uncomment just change background of display to white
-//						$(document.getElementById(picID)).css('border', "none");
-//						$(document.getElementById(picID)).css('margin', "0px");
+						//						$(document.getElementById(picID)).css('border', "none");
+						//						$(document.getElementById(picID)).css('margin', "0px");
 
 						$("#stage").show();
 
 						//reactivate clicks only after a little bit after the prompt's word
 						setTimeout(function() {
 							clickDisabled = false;
-						}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 + 300
-                                  );
+						}, (spriteData[wordList[0]].onset - spriteData[wordList[0]].start) * 1000 + 300);
 
 						startTime = (new Date()).getTime();
 						playPrompt(wordList[0]);
@@ -342,7 +347,7 @@ var experiment = {
 		dataforRound += "," + experiment.order
 		dataforRound += "," + experiment.trialnum + "," + experiment.word;
 		dataforRound += "," + experiment.pic1 + "," + experiment.pic2;
-		dataforRound += "," + experiment.phase + "," +  experiment.trialtype;
+		dataforRound += "," + experiment.phase + "," + experiment.trialtype;
 		dataforRound += "," + experiment.pic1type + "," + experiment.pic2type;
 		dataforRound += "," + experiment.side + "," + experiment.chosenpic + "," + experiment.response;
 		dataforRound += "," + experiment.date + "," + experiment.timestamp + "," + experiment.reactiontime + "\n";
