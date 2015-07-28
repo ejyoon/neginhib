@@ -7,6 +7,7 @@ library(bootstrap)
 library(dplyr)
 library(ggplot2)
 library(rjson)
+library(readr)
 
 ##functions
 # for bootstrapping 95% confidence intervals
@@ -20,48 +21,10 @@ ci.high <- function(x) {
 ## add some style elements for ggplot2
 plot.style <- theme_bw() + theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), legend.position="right", axis.line = element_line(colour="black",size=.5), axis.ticks = element_line(size=.5), axis.title.x = element_text(vjust=-.5), axis.title.y = element_text(angle=90,vjust=0.25))
 
-
-# ##Load in data
-# turk demo data
-# path <- "~/Documents/Work/Research/Negation/neginhib/data/adults_mturk/production-results/"
-# files <- dir(path)
-# 
-# demo <- as.data.frame(matrix(ncol = 4, nrow = 0))
-# names(demo) <- c("subid", "age", "gender", "language")
-# 
-# for (f in files) {
-#   this.file <- fromJSON( file = paste(path, f, sep="") )
-#   subid <- this.file$WorkerId
-#   age <- this.file$answers$data$age
-#   gender <- this.file$answers$data$gender
-#   language <- this.file$answers$data$nativeLanguage
-#   tmp <- cbind(subid, age, gender, language)
-#   demo <- rbind(demo, tmp)  
-# }
-# 
-# #csv data
-# path <- "~/Documents/Work/Research/Negation/neginhib/data/adults_mturk/"
-# files <- dir(path)
-# 
-# d <- data.frame()
-# 
-# for (f in files) {
-#   this.file <- read.csv(paste(path, f, sep=""), header=FALSE)
-#   names(this.file) <- c("subid","list","game.order","trial.num","word","leftpic","rightpic","game","trial.type","leftpic.type","rightpic.type","side.chosen","pic.chosen","response","date","timestamp","rt")
-#   d <- rbind(d, this.file)  
-# }
-# 
-# #merge data
-# d <- merge(d, demo)
-# 
-# #anonymize subid
-# d$subid <- as.factor(as.numeric(as.factor(d$subid)))
-
-
-d <- read.csv("~/Documents/Work/Research/Negation/neginhib/long_data/long_data_mturk.csv")
+d <- read_csv("../long_data/long_data_mturk.csv")
 
 ##Prep data
-d$correct <- as.numeric(as.character(factor(d$response, levels=c("Y","N"), labels=c("1","0"))))
+d$correct <- as.numeric(as.character(factor(d$response, levels=c("Y","N"), labels=c("1","0"))))==1
 d$trial.type <- factor(d$trial.type, levels=c("control","inhib","unambiguous","implicature","positive","negative"))
 
 ####Correct
@@ -80,6 +43,37 @@ qplot(data=ms, x=trial.type, y=m, fill=game,
                 position=position_dodge(.9), width=0) + 
   ylab("Prop correct") + xlab("Trial Type") +
   plot.style
+
+##### trial-by-trial for the reaction times
+d$trial.crit <- factor(d$trial.type %in% c("inhib","implicature","negative"), 
+                       levels = c(FALSE, TRUE), 
+                       labels = c("control","critical"))
+
+qplot(trial.num, rt, 
+      col = correct,
+      lty = correct,
+      facets = trial.crit ~ game,
+      data=filter(d, rt < 3000)) +
+  geom_smooth(size = 2, col = "black", 
+              method = "lm", 
+              formula = y ~ log(x)) + 
+  ylim(c(0,3000)) + 
+  theme_bw()
+
+#### trial by trial for the accuracies
+ms <- d %>%
+  mutate(trial.num = round(trial.num / 10) * 10) %>%
+  group_by(trial.num, trial.crit, game) %>%
+  summarise(correct = mean(correct))
+    
+qplot(trial.num, correct, 
+      facets = trial.crit ~ game,
+      data=ms) +
+  geom_smooth(size = 2, col = "black") + 
+  ylim(c(0,1)) +
+  theme_bw()
+
+
 
 ####Reaction time
 #Only correct trials
@@ -117,4 +111,52 @@ qplot(data=ms, x=trial.type, y=m, fill=game,
                 position=position_dodge(.9), width=0) + 
   ylab("Reaction time") + xlab("Trial Type") +
   plot.style
+
+
+###### INDIVIDUAL DIFFERENCES ######
+mss.rt <- dct %>%
+  group_by(subid, game, trial.crit) %>%
+  summarise(rt = mean(rt)) %>%
+  spread(trial.crit, rt) %>%
+  mutate(ratio = (critical - control) / (critical + control)) %>%
+  select(-control, -critical) %>%
+  spread(game, ratio)
+
+mss.acc <- d %>%
+  group_by(subid, game, trial.crit) %>%
+  summarise(correct = mean(correct)) %>%
+  spread(trial.crit, correct) %>%
+  mutate(ratio = (critical - control) / (critical + control)) %>%
+  select(-control, -critical) %>%
+  spread(game, ratio)
+
+splom(mss.rt[,2:4])
+splom(mss.acc[,2:4])
+
+qplot(implicature, inhibition, data=mss.rt) + 
+  geom_smooth(method="lm") + 
+  theme_bw() 
+
+qplot(implicature, negation, data=mss.rt) + 
+  geom_smooth(method="lm") + 
+  theme_bw() 
+
+qplot(negation, inhibition, data=mss.rt) + 
+  geom_smooth(method="lm") + 
+  theme_bw() 
+
+
+qplot(implicature, inhibition, data=mss.acc) + 
+  geom_smooth(method="lm") + 
+  theme_bw() 
+
+qplot(implicature, negation, data=mss.acc) + 
+  geom_smooth(method="lm") + 
+  theme_bw() 
+
+qplot(negation, inhibition, data=mss.acc) + 
+  geom_smooth(method="lm") + 
+  theme_bw() 
+
+
 
