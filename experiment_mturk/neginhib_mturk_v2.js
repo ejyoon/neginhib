@@ -19,7 +19,7 @@ window.onkeydown = function(e) {
 }
 
 var gameCounter = 0;
-var numGames = 2; //3 games (javascript indexing starts at 0)
+var numGames = 1; //2; //3 games (javascript indexing starts at 0)
 
 var testWord = "lion"
 
@@ -159,7 +159,7 @@ var experiment = {
 		//Set up experiment parameters before starting games
 
 		//order
-		experiment.order = random(6) + 1;
+		experiment.order = random(2) + 1;
 		//experiment.order = 1; //testing
 
 		gameList = makeGameList(experiment.order);
@@ -229,10 +229,10 @@ var experiment = {
 		var numTrials = "";
 		if (game == "inhibition") {
 			numTrials = wordsAndImages[2]; //the function makeWordsAndImages updates the number of inhib trials
-		} else if (game == "negation") {
-			numTrials = numNegTrials;
-		} else if (game == "implicature") {
-			numTrials = numImplicTrials;
+		} else if (game == "negimp") {
+			numTrials = numNegTrials + numImplicTrials;
+//		} else if (game == "implicature") {
+//			numTrials = numImplicTrials;
 		}
 
 		// Create the object table (tr=table row; td= table data)
