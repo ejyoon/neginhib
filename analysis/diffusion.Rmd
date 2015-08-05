@@ -1,0 +1,326 @@
+---
+title: "Diffusion Models of neginhib game"
+author: "Erica Yoon"
+date: "Aug 5 2015"
+output: html_document
+---
+`r library(knitr)`
+`r opts_chunk$set(message=FALSE, warning=FALSE)`
+
+## Data Loading
+
+Load required Libraries
+```{r}
+rm(list=ls())
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(magrittr)
+library(directlabels)
+library(RWiener)
+```
+
+Fixing up the wiener_plot function to deal with missing data
+```{r}
+wiener.plot <- function (dat) 
+{
+    rt = as.double(dat$q)
+    rc = as.numeric(as.factor(dat$resp))
+    dpos = tryCatch(density(rt[rc == 1], from = 0),error=function(e) NA)
+    dneg = tryCatch(density(rt[rc == 2], from = 0),error=function(e) NA)
+    maxt = max(pretty(max(rt)))
+    
+    maxd <- NA
+    if(is.na(dpos[1])){
+      maxd <- max(dneg$y)
+      } else if(is.na(dneg[1])){
+        maxd <- max(dpos$y)
+        } else {
+          maxd <- max(dpos$y, dneg$y)
+          }
+    
+    par(mar = c(0, 5, 0, 0), mfcol = c(2, 1), ask = FALSE)
+    plot(dpos, xlim = c(0, maxt), ylim = c(0, maxd), las = 2, 
+        lwd = 2, col = "green3", main = "", ylab = "", ask = FALSE)
+    rug(rt[rc == 1], col = "green3")
+    mtext("Density of positive responses", side = 2, line = 4, 
+        cex = 0.8)
+    plot(dneg, xlim = c(0, maxt), ylim = c(maxd, 0), las = 2, 
+        lwd = 2, col = "red", main = "", ylab = "", ask = FALSE)
+    mtext("Density of negative responses", side = 2, line = 4, 
+        cex = 0.8)
+    rug(rt[rc == 2], col = "red", side = 3)
+}
+```
+
+Read in adult data
+```{r,fig.height=3,fig.width=4.5}
+data <- read.csv("~/Documents/Research/neg_inhib/neginhib_GIT/long_data/long_data_mturk.csv") %>%
+  mutate(WorkerId = subid) %>%
+  mutate(cond = list) %>%
+  mutate(trialnum = trial.num) %>%
+  mutate(correct = response) %>%
+  mutate(trialtype = trial.type) %>%
+  select(WorkerId, cond, trialnum, correct, game, trialtype, rt) %>%
+  group_by(WorkerId, trialnum) %>%
+  mutate(side = if(((trialtype == "positive") || (trialtype == "unambiguous") || (trialtype == "control")) 
+                  & (correct == "Y")) "more"
+         else if(((trialtype == "positive") || (trialtype == "unambiguous") || (trialtype == "control"))
+                  & (correct == "N")) "less"
+         else if(((trialtype == "negative") || (trialtype == "implicature") || (trialtype == "inhib")) 
+                  & (correct == "N")) "more"
+         else "less") %>%
+  mutate(resp = as.character(factor(side,levels=c("more","less"),
+                                    labels=c("upper","lower")))) %>%
+  mutate(q = rt/1000) %>%
+  group_by() %>%
+  select(q,trialtype,resp) %>%
+  filter(q > 0) %>% # filtering the mysterious neg rt...
+  filter(log(q) < mean(log(q)) + 2 * sd(log(q)),
+         log(q) > mean(log(q)) - 2 * sd(log(q))) 
+
+positive.data <- filter(data,trialtype == "positive") %>%
+  select(q,resp)
+wiener.plot(positive.data)
+
+negative.data <- filter(data,trialtype == "negative") %>%
+  select(q,resp) %>%
+  as.data.frame
+wiener.plot(negative.data)
+
+unambiguous.data <- filter(data,trialtype == "unambiguous") %>%
+  select(q,resp) %>%
+  as.data.frame
+wiener.plot(unambiguous.data)
+
+implicature.data <- filter(data,trialtype == "implicature") %>%
+  select(q,resp) %>%
+  as.data.frame
+wiener.plot(implicature.data)
+
+inhib.control.data <- filter(data,trialtype == "control") %>%
+  select(q,resp) %>%
+  as.data.frame
+wiener.plot(inhib.control.data)
+
+inhib.data <- filter(data,trialtype == "inhib") %>%
+  select(q,resp) %>%
+  as.data.frame
+wiener.plot(inhib.data)
+```
+
+Compute parameters for each condition separately
+```{r}
+optim.positive <- optim(c(1, .1, .1, 1), wiener_deviance, 
+                           dat=positive.data, method="Nelder-Mead")
+optim.negative <- optim(c(1, .1, .1, 1), wiener_deviance, 
+                           dat=negative.data, method="Nelder-Mead")
+optim.unambiguous <- optim(c(1, .1, .1, 1), wiener_deviance, 
+                           dat=unambiguous.data, method="Nelder-Mead")
+optim.implicature <- optim(c(1, .1, .1, 1), wiener_deviance, 
+                           dat=implicature.data, method="Nelder-Mead")
+optim.inhib.control <- optim(c(1, .1, .1, 1), wiener_deviance, 
+                           dat=inhib.control.data, method="Nelder-Mead")
+optim.inhib <- optim(c(1, .1, .1, 1), wiener_deviance, 
+                           dat=inhib.data, method="Nelder-Mead")
+
+indiv.pars <- as.data.frame(rbind(optim.positive$par,
+                                  optim.negative$par,
+                                  optim.unambiguous$par,
+                                  optim.implicature$par,
+                                  optim.inhib.control$par,
+                                  optim.inhib$par))
+names(indiv.pars) <- c("Separation","Non.Decision","Bias","Drift")
+indiv.pars$Condition <- c("Control", "Target", "Control", "Target","Control", "Target")
+indiv.pars$Game<- c("neg.game","neg.game","imp.game","imp.game", "inhib.game","inhib.game")
+print(indiv.pars)
+```
+
+Pin parameters for item.num together
+```{r}
+# Function for tying parameters together across conditions
+many_drifts <- function(x, datlist) {
+  l = 0
+  for (c in 1:length(datlist)) {
+    l = l + wiener_deviance(x[c(1, 2, 3, c+3)], datlist[[c]])
+  }
+  
+  return(l)
+}
+
+datlist.cond.neg <- list(positive.data, negative.data)
+datlist.cond.imp <- list(unambiguous.data, implicature.data)
+datlist.cond.inhib <- list(inhib.control.data, inhib.data)
+
+# use nlm to estimate parameters
+optim.cond.neg <- optim(p=c(1, .1, .1, 1, 1), many_drifts, 
+                   dat=datlist.cond.neg,method="Nelder-Mead")
+optim.cond.imp <- optim(p=c(1, .1, .1, 1, 1), many_drifts, 
+                   dat=datlist.cond.imp,method="Nelder-Mead")
+optim.cond.inhib <- optim(p=c(1, .1, .1, 1, 1), many_drifts, 
+                   dat=datlist.cond.inhib,method="Nelder-Mead")
+
+joint.pars <- as.data.frame(rbind(optim.cond.neg$par,optim.cond.imp$par, optim.cond.inhib$par))
+names(joint.pars) <- c("Separation","Non.Decision","Bias",
+                       "Control", "Target")
+joint.pars <- gather(joint.pars,Condition,Drift,Control:Target)
+joint.pars$Game <- c("neg.game", "imp.game", "inhib.game","neg.game", "imp.game", "inhib.game")
+joint.pars %<>% select(Separation,Non.Decision,Bias,
+                       Drift,Condition,Game) %>%
+  arrange(Condition,Game)
+
+print(joint.pars)
+```
+
+Pin non-decision time for a group, pin boundaries and bias within a condition
+```{r}
+# Function for tying parameters together across conditions
+multi.loss.func <- function(x, datmat) {
+  l = 0
+  num.conds <- length(datmat)
+  num.types <- length(datmat[[1]])
+  
+  # model takes (sep, non-decision, bias, drift)
+  
+  # x has (non-decision, sep-1, bias-1, drift-11, drift-12,
+  #                      sep-2, bias-2, drift-21, drift-22)
+
+  for (cond in 1:num.conds) {
+    for(type in 1:num.types){
+
+      l = l + wiener_deviance(x[c(2+(cond-1)*(2+num.types), 1, 
+                                  3+(cond-1)*(2+num.types), 
+                                  3+(cond-1)*(2+num.types)+type)], 
+                              datmat[[cond]][[type]]) # fixme: need to adjust this to look at 3 instead of 2 games?
+    }
+  }
+  
+  return(l)
+}
+```
+
+neg vs. implicature
+```{r}
+#Function for reconstructing the parameter matrix
+make.par.mat <- function(optim.output) {
+  pars <- as.data.frame(t(optim.output$par))
+  names(pars) <- c("NonDecision","Separation.control","Bias.control",
+                   "Drift.Control.control","Drift.Inference.control",
+                   "Separation.target","Bias.target",
+                   "Drift.Control.target","Drift.Inference.target")
+
+  par.mat <- expand.grid(Condition = c("control", "target"),
+                         Game = c("neg.game", "imp.game")) #fixme to include inhib game
+  
+  par.mat$NonDecision <- pars[,"NonDecision"]
+  par.mat$Separation <- rep(c(pars[,"Separation.control"],
+                              pars[,"Separation.target"]))
+  par.mat$Bias <- rep(c(pars[,"Bias.control"],
+                        pars[,"Bias.target"]))
+  par.mat$Drift <- c(pars[,"Drift.Control.control"],
+                     pars[,"Drift.Control.target"],
+                     pars[,"Drift.Inference.control"],
+                     pars[,"Drift.Inference.target"])
+  
+  return(par.mat)
+}
+
+datlist.control <- list(positive.data, unambiguous.data) #fixme to include inhib game
+datlist.target <- list(negative.data, implicature.data) #fixme to include inhib game
+datmat <- list(datlist.control,datlist.target)
+
+
+  # x has (non-decision, sep-1, bias-1, drift-11, drift-12,
+  #                      sep-2, bias-2, drift-21, drift-22)
+
+optim.adult <- optim(p=c(.1, 1,.5, 1, -1, 1, .5, 1, -1), multi.loss.func, 
+                   dat=datmat,method="BFGS")
+
+adult.pars <- make.par.mat(optim.adult)
+
+print(adult.pars)
+```
+
+neg vs. inhib
+```{r}
+#Function for reconstructing the parameter matrix
+make.par.mat <- function(optim.output) {
+  pars <- as.data.frame(t(optim.output$par))
+  names(pars) <- c("NonDecision","Separation.control","Bias.control",
+                   "Drift.Control.control","Drift.Inference.control",
+                   "Separation.target","Bias.target",
+                   "Drift.Control.target","Drift.Inference.target")
+
+  par.mat <- expand.grid(Condition = c("control", "target"),
+                         Game = c("neg.game", "inhib.game")) #fixme to include inhib game
+  
+  par.mat$NonDecision <- pars[,"NonDecision"]
+  par.mat$Separation <- rep(c(pars[,"Separation.control"],
+                              pars[,"Separation.target"]))
+  par.mat$Bias <- rep(c(pars[,"Bias.control"],
+                        pars[,"Bias.target"]))
+  par.mat$Drift <- c(pars[,"Drift.Control.control"],
+                     pars[,"Drift.Control.target"],
+                     pars[,"Drift.Inference.control"],
+                     pars[,"Drift.Inference.target"])
+  
+  return(par.mat)
+}
+
+datlist.control <- list(positive.data, inhib.control.data) #fixme to include inhib game
+datlist.target <- list(negative.data, inhib.data) #fixme to include inhib game
+datmat <- list(datlist.control,datlist.target)
+
+
+  # x has (non-decision, sep-1, bias-1, drift-11, drift-12,
+  #                      sep-2, bias-2, drift-21, drift-22)
+
+optim.adult <- optim(p=c(.1, 1,.5, 1, -1, 1, .5, 1, -1), multi.loss.func, 
+                   dat=datmat,method="BFGS")
+
+adult.pars <- make.par.mat(optim.adult)
+
+print(adult.pars)
+```
+
+inhib vs. implicature
+```{r}
+#Function for reconstructing the parameter matrix
+make.par.mat <- function(optim.output) {
+  pars <- as.data.frame(t(optim.output$par))
+  names(pars) <- c("NonDecision","Separation.control","Bias.control",
+                   "Drift.Control.control","Drift.Inference.control",
+                   "Separation.target","Bias.target",
+                   "Drift.Control.target","Drift.Inference.target")
+
+  par.mat <- expand.grid(Condition = c("control", "target"),
+                         Game = c("inhib.game", "imp.game")) #fixme to include inhib game
+  
+  par.mat$NonDecision <- pars[,"NonDecision"]
+  par.mat$Separation <- rep(c(pars[,"Separation.control"],
+                              pars[,"Separation.target"]))
+  par.mat$Bias <- rep(c(pars[,"Bias.control"],
+                        pars[,"Bias.target"]))
+  par.mat$Drift <- c(pars[,"Drift.Control.control"],
+                     pars[,"Drift.Control.target"],
+                     pars[,"Drift.Inference.control"],
+                     pars[,"Drift.Inference.target"])
+  
+  return(par.mat)
+}
+
+datlist.control <- list(inhib.control.data, unambiguous.data) #fixme to include inhib game
+datlist.target <- list(inhib.data, implicature.data) #fixme to include inhib game
+datmat <- list(datlist.control,datlist.target)
+
+
+  # x has (non-decision, sep-1, bias-1, drift-11, drift-12,
+  #                      sep-2, bias-2, drift-21, drift-22)
+
+optim.adult <- optim(p=c(.1, 1,.5, 1, -1, 1, .5, 1, -1), multi.loss.func, 
+                   dat=datmat,method="BFGS")
+
+adult.pars <- make.par.mat(optim.adult)
+
+print(adult.pars)
+```
