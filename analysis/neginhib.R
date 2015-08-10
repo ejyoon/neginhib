@@ -8,6 +8,8 @@ library(dplyr)
 library(ggplot2)
 library(rjson)
 library(readr)
+library(tidyr)
+library(lattice)
 
 ##functions
 # for bootstrapping 95% confidence intervals
@@ -21,7 +23,31 @@ ci.high <- function(x) {
 ## add some style elements for ggplot2
 plot.style <- theme_bw() + theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(), legend.position="right", axis.line = element_line(colour="black",size=.5), axis.ticks = element_line(size=.5), axis.title.x = element_text(vjust=-.5), axis.title.y = element_text(angle=90,vjust=0.25))
 
-d <- read_csv("../long_data/long_data_mturk.csv")
+## number of unique subs
+n.unique <- function (x) {
+  length(unique(x))
+}
+
+
+####Load in data
+#Adult data (v1)
+#d <- read.csv("~/Documents/Work/Research/Negation/neginhib/long_data/long_data_mturk.csv")
+
+#Kid data
+d <- read.csv("~/Documents/Work/Research/Negation/neginhib/long_data/long_data_kids.csv")
+
+
+#remove kids who didn't play all three games
+reject <- d %>%
+  group_by(subid, game) %>%
+  summarise(ntrials = n()) %>%
+  spread(game, ntrials) %>% 
+  filter(is.na(implicature) | is.na(inhibition) | is.na(negation))
+
+for (i in reject$subid) {
+  d <- filter(d, subid !=i)
+}
+  
 
 ##Prep data
 d$correct <- as.numeric(as.character(factor(d$response, levels=c("Y","N"), labels=c("1","0"))))==1
@@ -144,6 +170,7 @@ qplot(implicature, negation, data=mss.rt) +
 qplot(negation, inhibition, data=mss.rt) + 
   geom_smooth(method="lm") + 
   theme_bw() 
+
 
 
 qplot(implicature, inhibition, data=mss.acc) + 
