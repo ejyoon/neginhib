@@ -44,6 +44,12 @@ d$trial.crit <- factor(d$trial.type %in% c("inhib","implicature","negative"),
                        levels = c(FALSE, TRUE), 
                        labels = c("control","critical"))
 
+##Reject participants who got <80% correct
+d <- d %>%
+  group_by(subid) %>%
+  mutate(prop.correct = mean(correct)) %>%
+  filter(prop.correct >= .8)
+
 ####Correct
 #Plot data
 ms <- d %>%
