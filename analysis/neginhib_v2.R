@@ -29,41 +29,32 @@ n.unique <- function (x) {
 }
 
 
-####Load in data
-#Adult data (v1)
-#d <- read.csv("~/Documents/Work/Research/Negation/neginhib/long_data/long_data_mturk.csv")
-
-#Kid data
-d <- read.csv("~/Documents/Work/Research/Negation/neginhib/long_data/long_data_kids.csv")
-
-
-#remove kids who didn't play all three games
-reject <- d %>%
-  group_by(subid, game) %>%
-  summarise(ntrials = n()) %>%
-  spread(game, ntrials) %>% 
-  filter(is.na(implicature) | is.na(inhibition) | is.na(negation))
-
-for (i in reject$subid) {
-  d <- filter(d, subid !=i)
-}
-  
+d <- read_csv('../long_data/long_data_mturk2.csv')
 
 ##Prep data
 d$correct <- as.numeric(as.character(factor(d$response, levels=c("Y","N"), labels=c("1","0"))))==1
 d$trial.type <- factor(d$trial.type, levels=c("control","inhib","unambiguous","implicature","positive","negative"))
 
+d$game2 <- as.character(d$game)
+d[d$trial.type == "unambiguous" | d$trial.type == "implicature",]$game2 <- "implicature"
+d[d$trial.type == "positive" | d$trial.type == "negative",]$game2 <- "negation"
+d$game2 <- factor(d$game2, levels=c("inhibition","implicature","negation"))
+
+d$trial.crit <- factor(d$trial.type %in% c("inhib","implicature","negative"), 
+                       levels = c(FALSE, TRUE), 
+                       labels = c("control","critical"))
+
 ####Correct
 #Plot data
 ms <- d %>%
-  group_by(game, trial.type, subid) %>%
+  group_by(game2, trial.crit, subid) %>%
   summarise(m = mean(correct)) %>%
-  group_by(game, trial.type) %>%
+  group_by(game2, trial.crit) %>%
   summarise(cih = ci.high(m),
             cil = ci.low(m),
             m = mean(m)) 
 
-qplot(data=ms, x=trial.type, y=m, fill=game,
+qplot(data=ms, x=game2, y=m, fill=trial.crit,
       stat="identity", position="dodge", geom="bar") + 
   geom_errorbar(aes(ymin=cil, ymax=cih), 
                 position=position_dodge(.9), width=0) + 
@@ -71,10 +62,6 @@ qplot(data=ms, x=trial.type, y=m, fill=game,
   plot.style
 
 ##### trial-by-trial for the reaction times
-d$trial.crit <- factor(d$trial.type %in% c("inhib","implicature","negative"), 
-                       levels = c(FALSE, TRUE), 
-                       labels = c("control","critical"))
-
 qplot(trial.num, rt, 
       col = correct,
       lty = correct,
@@ -124,14 +111,14 @@ qplot(data=dct, x=log.rt, geom = "histogram")
 
 #Plot data
 ms <- dct %>%
-  group_by(game, trial.type, subid) %>%
+  group_by(game2, trial.crit, subid) %>%
   summarise(m = mean(rt)) %>%
-  group_by(game, trial.type) %>%
+  group_by(game2, trial.crit) %>%
   summarise(cih = ci.high(m),
             cil = ci.low(m),
             m = mean(m)) 
 
-qplot(data=ms, x=trial.type, y=m, fill=game,
+qplot(data=ms, x=game2, y=m, fill=trial.crit,
       stat="identity", position="dodge", geom="bar") + 
   geom_errorbar(aes(ymin=cil, ymax=cih), 
                 position=position_dodge(.9), width=0) + 
@@ -141,20 +128,20 @@ qplot(data=ms, x=trial.type, y=m, fill=game,
 
 ###### INDIVIDUAL DIFFERENCES ######
 mss.rt <- dct %>%
-  group_by(subid, game, trial.crit) %>%
+  group_by(subid, game2, trial.crit) %>%
   summarise(rt = mean(rt)) %>%
   spread(trial.crit, rt) %>%
-  mutate(ratio = critical) %>%
+  mutate(ratio = (critical - control) / (critical + control)) %>%
   select(-control, -critical) %>%
-  spread(game, ratio)
+  spread(game2, ratio)
 
 mss.acc <- d %>%
-  group_by(subid, game, trial.crit) %>%
+  group_by(subid, game2, trial.crit) %>%
   summarise(correct = mean(correct)) %>%
   spread(trial.crit, correct) %>%
-  mutate(ratio = critical) %>%
+  mutate(ratio = (critical - control) / (critical + control)) %>%
   select(-control, -critical) %>%
-  spread(game, ratio)
+  spread(game2, ratio)
 
 splom(mss.rt[,2:4])
 splom(mss.acc[,2:4])
@@ -176,6 +163,7 @@ qplot(negation, inhibition, data=mss.rt) +
 qplot(implicature, inhibition, data=mss.acc) + 
   geom_smooth(method="lm") + 
   theme_bw() 
+cor.test(mss.acc$implicature, mss.rt$inhibition)
 
 qplot(implicature, negation, data=mss.acc) + 
   geom_smooth(method="lm") + 
