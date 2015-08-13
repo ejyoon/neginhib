@@ -47,34 +47,50 @@ reject <- d %>%
 for (i in reject$subid) {
   d <- filter(d, subid !=i)
 }
-  
 
 ##Prep data
 d$correct <- as.numeric(as.character(factor(d$response, levels=c("Y","N"), labels=c("1","0"))))==1
 d$trial.type <- factor(d$trial.type, levels=c("control","inhib","unambiguous","implicature","positive","negative"))
 
-####Correct
-#Plot data
-ms <- d %>%
-  group_by(game, trial.type, subid) %>%
-  summarise(m = mean(correct)) %>%
-  group_by(game, trial.type) %>%
-  summarise(cih = ci.high(m),
-            cil = ci.low(m),
-            m = mean(m)) 
-
-qplot(data=ms, x=trial.type, y=m, fill=game,
-      stat="identity", position="dodge", geom="bar") + 
-  geom_errorbar(aes(ymin=cil, ymax=cih), 
-                position=position_dodge(.9), width=0) + 
-  ylab("Prop correct") + xlab("Trial Type") +
-  plot.style
-
-##### trial-by-trial for the reaction times
 d$trial.crit <- factor(d$trial.type %in% c("inhib","implicature","negative"), 
                        levels = c(FALSE, TRUE), 
                        labels = c("control","critical"))
 
+d$game <- factor(d$game, levels=c("inhibition","implicature","negation"))
+
+
+##Reject participants who got <80% correct on any game
+#NOTE: Doing this with kids cuts n n half...
+# reject2 <- d %>%
+#   group_by(subid, game) %>%
+#   summarise(prop.correct = mean(correct)) %>%
+#   spread(game, prop.correct) %>%
+#   filter(implicature < .6 | inhibition < .6 | negation < .6) 
+# 
+# for (i in reject2$subid) {
+#   d <- filter(d, subid !=i)
+# }
+
+
+####Correct
+#Plot data
+ms <- d %>%
+  group_by(game, trial.crit, subid) %>%
+  summarise(m = mean(correct)) %>%
+  group_by(game, trial.crit) %>%
+  summarise(cih = ci.high(m),
+            cil = ci.low(m),
+            m = mean(m)) 
+
+qplot(data=ms, x=game, y=m, fill=trial.crit,
+      stat="identity", position="dodge", geom="bar") + 
+  geom_errorbar(aes(ymin=cil, ymax=cih), 
+                position=position_dodge(.9), width=0) + 
+  ylab("Proportion correct") + xlab("Trial Type") +
+  scale_fill_hue(name="Trial Type") +
+  plot.style
+
+##### trial-by-trial for the reaction times
 qplot(trial.num, rt, 
       col = correct,
       lty = correct,
@@ -124,18 +140,19 @@ qplot(data=dct, x=log.rt, geom = "histogram")
 
 #Plot data
 ms <- dct %>%
-  group_by(game, trial.type, subid) %>%
+  group_by(game, trial.crit, subid) %>%
   summarise(m = mean(rt)) %>%
-  group_by(game, trial.type) %>%
+  group_by(game, trial.crit) %>%
   summarise(cih = ci.high(m),
             cil = ci.low(m),
             m = mean(m)) 
 
-qplot(data=ms, x=trial.type, y=m, fill=game,
+qplot(data=ms, x=game, y=m, fill=trial.crit,
       stat="identity", position="dodge", geom="bar") + 
   geom_errorbar(aes(ymin=cil, ymax=cih), 
                 position=position_dodge(.9), width=0) + 
   ylab("Reaction time") + xlab("Trial Type") +
+  scale_fill_hue(name="Trial Type") +
   plot.style
 
 
@@ -144,7 +161,7 @@ mss.rt <- dct %>%
   group_by(subid, game, trial.crit) %>%
   summarise(rt = mean(rt)) %>%
   spread(trial.crit, rt) %>%
-  mutate(ratio = critical) %>%
+  mutate(ratio = (critical - control) / (critical + control)) %>%
   select(-control, -critical) %>%
   spread(game, ratio)
 
@@ -152,7 +169,7 @@ mss.acc <- d %>%
   group_by(subid, game, trial.crit) %>%
   summarise(correct = mean(correct)) %>%
   spread(trial.crit, correct) %>%
-  mutate(ratio = critical) %>%
+  mutate(ratio = (critical - control) / (critical + control)) %>%
   select(-control, -critical) %>%
   spread(game, ratio)
 
