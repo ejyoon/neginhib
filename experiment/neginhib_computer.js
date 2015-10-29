@@ -419,7 +419,7 @@ var experiment = {
 					//there are no more trials for the experiment to run
 					if (counter === numTrials + 1) {
 						if (gameCounter === numGames) {
-							experiment.background();
+							experiment.end();
 						} else {
 							gameCounter++;
 							document.body.style.background = "white";
