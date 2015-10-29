@@ -118,3 +118,10 @@ This stuff will vary by experiment.
 	width: 900px;
 	height: auto;
 }
+
+.title{
+  text-align: center;
+  margin: auto auto;
+  margin-bottom: 1em;
+  font-size: 2em;
+}
