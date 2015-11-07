@@ -1,0 +1,386 @@
+---
+title: "Neginhib Diffusion Models"
+author: "Ann E. Nordmeyer"
+date: "October 22, 2015"
+output: html_document
+---
+
+## Setting up
+
+Load required Libraries
+
+```{r libraries}
+rm(list=ls())
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(magrittr)
+#library(directlabels)
+library(RWiener)
+library(knitr)
+library(bootstrap)
+library(gridExtra)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache=TRUE)
+```
+
+Some useful functions:
+```{r functions}
+# number of unique subs
+n.unique <- function (x) {
+  length(unique(x))
+}
+
+# for bootstrapping 95% confidence intervals
+theta <- function(x,xdata) {mean(xdata[x])}
+ci.low <- function(x) {
+  quantile(bootstrap(1:length(x),1000,theta,x)$thetastar,.025)}
+ci.high <- function(x) {
+  quantile(bootstrap(1:length(x),1000,theta,x)$thetastar,.975)}
+
+# Fixing up the wiener_plot function to deal with missing data
+wiener.plot <- function (dat) 
+{
+  rt = as.double(dat$q)
+  rc = as.numeric(as.factor(dat$resp))
+  dpos = tryCatch(density(rt[rc == 1], from = 0),error=function(e) NA)
+  dneg = tryCatch(density(rt[rc == 2], from = 0),error=function(e) NA)
+  maxt = max(pretty(max(rt)))
+  
+  maxd <- NA
+  if(is.na(dpos[1])){
+    maxd <- max(dneg$y)
+  } else if(is.na(dneg[1])){
+    maxd <- max(dpos$y)
+  } else {
+    maxd <- max(dpos$y, dneg$y)
+  }
+  
+  par(mar = c(0, 5, 0, 0), mfcol = c(2, 1), ask = FALSE)
+  plot(dpos, xlim = c(0, maxt), ylim = c(0, maxd), las = 2, 
+       lwd = 2, col = "green3", main = "", ylab = "", ask = FALSE)
+  rug(rt[rc == 1], col = "green3")
+  mtext("Density of positive responses", side = 2, line = 4, 
+        cex = 0.8)
+  plot(dneg, xlim = c(0, maxt), ylim = c(maxd, 0), las = 2, 
+       lwd = 2, col = "red", main = "", ylab = "", ask = FALSE)
+  mtext("Density of negative responses", side = 2, line = 4, 
+        cex = 0.8)
+  rug(rt[rc == 2], col = "red", side = 3)
+}
+```
+
+# Load in data
+
+```{r loaddata}
+d.turk <- read.csv("../long_data/long_data_mturk.csv") %>%
+  # remove anyone who didn't play all three games
+  group_by(subid) %>%
+  mutate(ngames = n.unique(game)) %>%
+  filter(ngames == 3) %>%
+  ungroup() %>%
+  # create resp and rt vars
+  mutate(resp = factor(response, levels=c("Y","N"), labels=c("upper","lower")), 
+         q = rt/1000) %>%
+  # remove outlier RTs
+  filter(rt > 0) %>% # filtering the mysterious neg rt...
+  filter(log(rt) < mean(log(rt) + 2 * sd(log(rt))), 
+         log(rt) > mean(log(rt) - 2 * sd(log(rt)))) %>%
+  # clean up
+  select(subid, game, trial.num, trial.type, q, resp) %>%
+  mutate(agegroup = "adults") %>%
+  ungroup() 
+
+d.bing <- read.csv("../long_data/long_data_kids.csv") %>%
+  # remove anyone who didn't play all three games
+  group_by(subid) %>%
+  mutate(ngames = n.unique(game)) %>%
+  filter(ngames == 3) %>%
+  ungroup() %>%
+  # create resp and rt vars
+  mutate(resp = factor(response, levels=c("Y","N"), labels=c("upper","lower")), 
+         q = rt/1000) %>%
+  # remove outlier RTs
+  filter(rt > 0) %>% # filtering the mysterious neg rt...
+  filter(log(rt) < mean(log(rt) + 2 * sd(log(rt))), 
+         log(rt) > mean(log(rt) - 2 * sd(log(rt)))) %>%
+  # clean up
+  select(subid, game, trial.num, trial.type, q, resp) %>%
+  mutate(agegroup = "kids") %>%
+  ungroup() 
+
+d <- rbind(d.turk, d.bing)
+```
+
+## Plot densities of correct (upper) and incorrect (lower) responses
+
+Plots show density of RTs for correct (green line, above) and incorrect responses (red line, below), for each trial type.  You can kind of see the speed-accuracy tradeoff in some of these plots, especially the inhibition trials.  
+
+```{r plots1}
+#Make a bunch of plots:
+trialtypes <- c("control", "inhib", "unambiguous", "implicature", "positive", "negative")
+
+for (i in 1:length(trialtypes)) {
+  print(paste("Plot of ",trialtypes[i],", adults", sep=""))
+  wiener.plot(subset(d.turk, agegroup == "adults" & trial.type == trialtypes[i], select=c(q, resp)))
+  print(paste("Plot of ",trialtypes[i],", kids", sep=""))
+  wiener.plot(subset(d.bing, agegroup == "kids" & trial.type == trialtypes[i], select=c(q, resp)))
+}
+```
+
+## Estimating parameters
+
+Calculate parameters for each condition separately, within each subject.  Then aggregate across subjects to get means & confidence intervals on the parameters, and plot the parameters across each game & condition.
+
+```{r setuppars}
+sub.pars <- data.frame(Separation = numeric(),
+                       Non.Decision = numeric(),
+                       Bias = numeric(),
+                       Drift = numeric(),
+                       Trial.Type = character(),
+                       SubID = character(), 
+                       Age = character())
+sub.pars$Trial.Type <- as.character(sub.pars$Trial.Type)
+sub.pars$SubID <- as.character(sub.pars$SubID)
+sub.pars$Age <- as.character(sub.pars$Age)
+
+temp.pars <- sub.pars
+
+#because RWiener is finicky:
+d$resp <- as.character(d$resp)
+```
+
+```{r estpars}
+subs <- unique(d$subid)
+
+for (j in 1:length(subs)) {
+  sid <- as.character(subs[j]) 
+  for (i in 1:length(trialtypes)) {
+    ttype <- as.character(trialtypes[i])
+    dat <- as.data.frame(subset(d, trial.type == ttype & subid == sid))
+    opt <- optim(c(1, .1, .1, 1), wiener_deviance, 
+                 dat=select(dat, c(q, resp)), method="Nelder-Mead")
+    pars <- c(opt$par, ttype, sid, dat$agegroup[1])
+    temp.pars[i,] <- pars
+  }
+  sub.pars <- rbind(temp.pars, sub.pars)
+} 
+```
+
+First plot the difference between parameters between conditions in different games:
+
+```{r plotpars}
+sub.pars <- sub.pars %>%
+  mutate(Condition = ifelse(Trial.Type == "control" | Trial.Type == "positive" | Trial.Type == "unambiguous", "Control", "Target"),
+         Game = ifelse(Trial.Type == "control" | Trial.Type == "inhib", "inhib.game", ifelse(Trial.Type == "positive" | Trial.Type == "negative", "neg.game", "imp.game")))
+
+sub.pars$Separation <- as.numeric(sub.pars$Separation)
+sub.pars$Non.Decision <- as.numeric(sub.pars$Non.Decision)
+sub.pars$Bias <- as.numeric(sub.pars$Bias)
+sub.pars$Drift <- as.numeric(sub.pars$Drift)
+
+sub.pars.ms <- sub.pars %>%
+  gather(Param, Value, Separation:Drift) %>%
+  group_by(Age, Condition, Game, Param) %>%
+  summarise(M = mean(Value),
+            cih = ci.high(Value),
+            cil = ci.low(Value))
+sub.pars.ms$Game <- factor(sub.pars.ms$Game, levels = c("inhib.game", "imp.game", "neg.game"))
+
+qplot(data = subset(sub.pars.ms, Age == "adults"), x = Condition, color = Condition,
+      y = M, ymax=cih, ymin=cil, 
+      geom = "pointrange", position = position_dodge(.1)) +
+  facet_grid(Param ~ Game, scales = "free") +
+  ggtitle("Adults") +
+  theme_bw()
+
+qplot(data = subset(sub.pars.ms, Age == "kids"), x = Condition, color = Condition,
+      y = M, ymax=cih, ymin=cil, 
+      geom = "pointrange", position = position_dodge(.1)) +
+  facet_grid(Param ~ Game, scales = "free") +
+  ggtitle("Kids") +
+  theme_bw()
+
+```
+
+It looks like performance on these games is driven by different processes in both adults and children: 
+
+- The difference between conditions in the inhibition game is driven largely by the stronger bias towards the incorrect (lower) boundary in the target condition.  
+- In the implicatures game, the control condition has a higher separation boundary (e.g. more conservative decision criteria?) but also a higher drift rate; note that this could explain the similar RTs in these two conditions.  
+- In the negation game, it looks like the two conditions (positive v. negative sentences) are really similar, except for kids, where the drift rate is much lower in the target condition (i.e. negative sentences).  Note that this looks like the most striking difference between adults and kids, except for main effects (e.g. kids have higher separation boundaries, longer non-decision times, and slower drift rates, consistent with past work)
+
+We can also take these parameters and visualize the actual diffusion process for each game/condition/age group:
+
+```{r parvis, fig.width=8, fig.height=10}
+#Visualize diffusion process for each game & condition
+games <- c("inhib.game", "imp.game", "neg.game")
+agegroup <- unique(sub.pars.ms$Age)
+p <- list()
+
+x <- 5
+y <- 6
+
+for (a in 1:length(agegroup)) {
+  for (g in 1:length(games)) {
+    params <- sub.pars.ms %>%
+      subset(Game == games[g] & Age == agegroup[a]) %>%
+      gather(Name, Value, M:cil) %>%
+      unite(Stats, Param, Name) %>%
+      spread(Stats, Value)
+    params$yint_M = (params$Bias_M*params$Separation_M) - (params$Drift_M*params$Non.Decision_M)
+    params$yint_cih = (params$Bias_M*params$Separation_M) - (params$Drift_cih*params$Non.Decision_M)
+    params$yint_cil = (params$Bias_M*params$Separation_M) - (params$Drift_cil*params$Non.Decision_M)
+    
+    drift_ribbon <- data.frame(xvals = c(params$Non.Decision_M, #non-decision time
+                                         (params$Separation_M - params$yint_cih) / params$Drift_cih, #Point where high drift line hits separation boundary
+                                         (params$Separation_M - params$yint_cil) / params$Drift_cil), #Point where low drift line hits separation boundary
+                               ymin = c(params$Bias_M * params$Separation_M, #point where drift starts
+                                        params$Drift_cil*((params$Separation_M - params$yint_cih) / params$Drift_cih) + params$yint_cil, #point where low drift is when high drift ends
+                                        params$Separation_M), #point where low drift ends
+                               ymax = c(params$Bias_M * params$Separation_M, #point where drift starts
+                                        params$Separation_M, #point where drift ends
+                                        params$Separation_M),#point where drift ends
+                               Condition = rep(params$Condition, 3))
+    
+    nd_ribbon <- data.frame(xmin = params$Non.Decision_cil,
+                            xmax = params$Non.Decision_cih,
+                            ymin = rep(params$Bias_cil*params$Separation_cil, 2), 
+                            ymax = rep(params$Bias_cih*params$Separation_cih, 2),
+                            Condition = params$Condition)
+    
+    sep_ribbon <- data.frame(xmin = rep(c(0), 2),
+                             xmax = rep(x, 2),
+                             ymin = params$Separation_cil,
+                             ymax = params$Separation_cih,
+                             Condition = params$Condition)
+    
+    df <- data.frame()
+    
+    p[[g + 3*(a-1)]] <- ggplot(df) + ylim(c(0, y)) + xlim(c(0, x)) + 
+      geom_point() +  theme_bw() +
+      geom_segment(data = params, 
+                   aes(x = Non.Decision_M, 
+                       xend = (Separation_M - yint_M) / Drift_M,
+                       y = Bias_M * Separation_M, yend = Separation_M, 
+                       color = Condition)) + 
+      geom_rect(data = nd_ribbon,
+                aes(xmin = xmin,
+                    xmax = xmax,
+                    ymin = ymin, 
+                    ymax = ymax,
+                    fill = Condition), 
+                alpha=0.2) +
+      geom_ribbon(data = drift_ribbon, 
+                  aes(x = xvals, 
+                      ymin = ymin, 
+                      ymax = ymax,
+                      fill = Condition), 
+                  alpha=0.2) +
+      geom_rect(data = sep_ribbon, 
+                aes(xmin = xmin,
+                    xmax = xmax,
+                    ymin = ymin, 
+                    ymax = ymax,
+                    fill = Condition), 
+                alpha=0.2) +
+      geom_hline(data = params, 
+                 aes(yintercept = Separation_M, color = Condition),
+                 linetype = "dashed") + 
+      geom_hline(yintercept = 0, linetype = "dashed") + 
+      geom_vline(data = params, 
+                 aes(xintercept = Non.Decision_M, color = Condition)) + 
+      theme(legend.position=c(.8, .8)) +
+      xlab("Time (seconds)") + ylab("Boundary Separation") + ggtitle(paste(agegroup[a], games[g], sep = " ")) 
+  } 
+}
+
+plotlist <- c(list(p[[1]], p[[4]], p[[2]], p[[5]], p[[3]], p[[6]]), ncol = 2, nrow = 3)
+do.call(grid.arrange, plotlist)
+```
+
+This makes some differences between adults and kids really jump out: first, kids are generally more conservative, as indicated by the higher separation boundary.  Particularly striking are the slow drift rates, especially for implicature trials and negation trials.  Note that in these two conditions the CIs on the drift rate dip below 0 (i.e. the diffusion process actually heads towards the lower/incorrect boundary). This is consistent with the fact that kids performed around chance on these trials.  
+
+The problem with this plot is that, when they are all plotted on the same axes (to show the differences between games and agegroups more clearly), the adult plots are hard to read.  I'm zooming in here: 
+```{r viszoom}
+x <- 1.25
+y <- 3.25
+
+p <- list()
+
+for (g in 1:length(games)) {
+  params <- sub.pars.ms %>%
+    subset(Game == games[g] & Age == "adults") %>%
+    gather(Name, Value, M:cil) %>%
+    unite(Stats, Param, Name) %>%
+    spread(Stats, Value)
+  params$yint_M = (params$Bias_M*params$Separation_M) - (params$Drift_M*params$Non.Decision_M)
+  params$yint_cih = (params$Bias_M*params$Separation_M) - (params$Drift_cih*params$Non.Decision_M)
+  params$yint_cil = (params$Bias_M*params$Separation_M) - (params$Drift_cil*params$Non.Decision_M)
+  
+  drift_ribbon <- data.frame(xvals = c(params$Non.Decision_M, #non-decision time
+                                       (params$Separation_M - params$yint_cih) / params$Drift_cih, #Point where high drift line hits separation boundary
+                                       (params$Separation_M - params$yint_cil) / params$Drift_cil), #Point where low drift line hits separation boundary
+                             ymin = c(params$Bias_M * params$Separation_M, #point where drift starts
+                                      params$Drift_cil*((params$Separation_M - params$yint_cih) / params$Drift_cih) + params$yint_cil, #point where low drift is when high drift ends
+                                      params$Separation_M), #point where low drift ends
+                             ymax = c(params$Bias_M * params$Separation_M, #point where drift starts
+                                      params$Separation_M, #point where drift ends
+                                      params$Separation_M),#point where drift ends
+                             Condition = rep(params$Condition, 3))
+  
+  nd_ribbon <- data.frame(xmin = params$Non.Decision_cil,
+                          xmax = params$Non.Decision_cih,
+                          ymin = rep(params$Bias_cil*params$Separation_cil, 2), 
+                          ymax = rep(params$Bias_cih*params$Separation_cih, 2),
+                          Condition = params$Condition)
+  
+  sep_ribbon <- data.frame(xmin = rep(c(0), 2),
+                           xmax = rep(x, 2),
+                           ymin = params$Separation_cil,
+                           ymax = params$Separation_cih,
+                           Condition = params$Condition)
+  
+  df <- data.frame()
+  
+  p[[g]] <- ggplot(df) + ylim(c(0, y)) + xlim(c(0, x)) +
+    geom_point() +  theme_bw() +
+    geom_segment(data = params, 
+                 aes(x = Non.Decision_M, 
+                     xend = (Separation_M - yint_M) / Drift_M,
+                     y = Bias_M * Separation_M, yend = Separation_M, 
+                     color = Condition)) + 
+    geom_rect(data = nd_ribbon,
+              aes(xmin = xmin,
+                  xmax = xmax,
+                  ymin = ymin, 
+                  ymax = ymax,
+                  fill = Condition), 
+              alpha=0.2) +
+    geom_ribbon(data = drift_ribbon, 
+                aes(x = xvals, 
+                    ymin = ymin, 
+                    ymax = ymax,
+                    fill = Condition), 
+                alpha=0.2) +
+    geom_rect(data = sep_ribbon, 
+              aes(xmin = xmin,
+                  xmax = xmax,
+                  ymin = ymin, 
+                  ymax = ymax,
+                  fill = Condition), 
+              alpha=0.2) +
+    geom_hline(data = params, 
+               aes(yintercept = Separation_M, color = Condition),
+               linetype = "dashed") + 
+    geom_hline(yintercept = 0, linetype = "dashed") + 
+    geom_vline(data = params, 
+               aes(xintercept = Non.Decision_M, color = Condition)) + 
+    theme(legend.position=c(.9, .8)) +
+    xlab("Time (seconds)") + ylab("Boundary Separation") + ggtitle(paste("adults", games[g], sep = " ")) 
+} 
+
+
+print(p)
+```
