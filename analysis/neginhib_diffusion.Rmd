@@ -34,6 +34,7 @@ library(RWiener)
 library(knitr)
 library(bootstrap)
 library(gridExtra)
+library(effsize)
 ```
 
 ```{r setup, include=FALSE}
@@ -335,6 +336,24 @@ qplot(data = subset(sub.pars.ms, Age == "kids"), x = Condition, color = Conditio
   ggtitle("Kids") +
   theme_bw()
 
+```
+
+```{r power}
+kids.inhib <- filter(sub.pars, Age == "kids" & Game == "inhib.game")
+kids.imp <- filter(sub.pars, Age == "kids" & Game == "imp.game")
+kids.neg <- filter(sub.pars, Age == "kids" & Game == "neg.game")
+
+#inhib Bias
+cohen.d(kids.inhib$Bias, kids.inhib$Condition, pooled = F, paired = T, na.rm = T)
+
+#imp Separation
+cohen.d(kids.imp$Separation, kids.imp$Condition, pooled = F, paired = T, na.rm = T)
+
+#imp Drift
+cohen.d(kids.imp$Drift, kids.imp$Condition, pooled = F, paired = T, na.rm = T)
+
+#neg drift
+cohen.d(kids.neg$Drift, kids.neg$Condition, pooled = F, paired = T, na.rm = T)
 ```
 
 It looks like performance on these games is driven by different processes in both adults and children: 
