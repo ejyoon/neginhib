@@ -1,8 +1,9 @@
 ---
 title: "Neginhib Diffusion Models"
 author: "Ann E. Nordmeyer"
-date: "November 7, 2015"
-output: html_document
+output: 
+  html_document:
+    toc: true
 ---
 
 Analysis for Neginhib (Ann Nordmeyer, Erica Yoon, Mike Frank).  The study included three games designed to test the relationship between inhibitory control, implicature processing, and negation processing.  All games had a similar structure: participants saw two pictures and heard a word, and had to select the picture that goes with the word as quickly as possible.  Each game had two trial types, labeled *control* and *target* in these analyses. 
@@ -15,7 +16,7 @@ The three games were:
 **Negation Game**: On *control* / positive trials, participants saw two pictures and heard a word referring to one of the pictures (e.g. a picture of an apple and a picture of a cookie, with the word "apple").  On *target* / negative trials, participants saw two pictures and heard a word negating one of the pictures (e.g. a picture of an apple and a picture of a cookie, with the words "no apple").
 
 
-Kids (mostly 4-year-olds in this analysis) played these games at Bing on an iPad, with 60 trials per game.  Adults completed the task on MTurk, with 120 trials per game.  The adult version of the task can be viewed here: 
+Kids played these games at Bing on an iPad (only 4-year-olds) or at the CDM on a computer (4, 5, and 6-year-olds), with 60 trials per game in both the iPad and the computer version.  Adults completed the task on MTurk, with 120 trials per game.  The adult version of the task can be viewed here: 
 https://langcog.stanford.edu/expts/EJY/neginhib/v1/turk/neginhib_mturk.html
 
 
@@ -90,11 +91,14 @@ wiener.plot <- function (dat)
 Load in data
 
 ```{r loaddata}
-d.turk <- read.csv("../long_data/long_data_mturk.csv") %>%
-  # remove anyone who didn't play all three games
+d.turk <- read.csv("../long_data/long_data_mturk.csv") 
+n.turk.initial <- n.unique(d.turk$subid)
+
+d.turk <- d.turk %>%
+  # remove anyone who played fewer than 300 trials (means they did not complete at least half of the third game) or over 408 trials (means they completed the task twice, because 408 is max number of trials -- this only happened for one participant and I'm not sure how they were able to do this, so I'm rejecting them)
   group_by(subid) %>%
-  mutate(ngames = n.unique(game)) %>%
-  filter(ngames == 3) %>%
+  mutate(ntrials = n()) %>%
+  filter(ntrials > 300 & ntrials < 408) %>%
   ungroup() %>%
   # create resp and rt vars
   mutate(resp = factor(response, levels=c("Y","N"), labels=c("upper","lower")), 
@@ -105,14 +109,21 @@ d.turk <- read.csv("../long_data/long_data_mturk.csv") %>%
          log(rt) > mean(log(rt) - 2 * sd(log(rt)))) %>%
   # clean up
   select(subid, game, trial.num, trial.type, q, resp) %>%
-  mutate(agegroup = "adults") %>%
+  mutate(location = "turk", 
+         modality = "computer", 
+         agegroup = "adults") %>%
   ungroup() 
+n.turk.final <- n.unique(d.turk$subid)
 
-d.bing <- read.csv("../long_data/long_data_kids.csv") %>%
-  # remove anyone who didn't play all three games
+d.bing <- read.csv("../long_data/long_data_bing.csv") %>%
+  filter(agegroup == 4)
+n.bing.initial <- n.unique(d.bing$subid)
+
+d.bing <- d.bing %>%
+  # remove any child who played fewer than 150 trials (means they didn't complete at least half of the final game)
   group_by(subid) %>%
-  mutate(ngames = n.unique(game)) %>%
-  filter(ngames == 3) %>%
+  mutate(ntrials = n()) %>%
+  filter(ntrials > 150) %>%
   ungroup() %>%
   # create resp and rt vars
   mutate(resp = factor(response, levels=c("Y","N"), labels=c("upper","lower")), 
@@ -120,38 +131,82 @@ d.bing <- read.csv("../long_data/long_data_kids.csv") %>%
   # remove outlier RTs
   filter(rt > 0) %>% # filtering the mysterious neg rt...
   filter(log(rt) < mean(log(rt) + 2 * sd(log(rt))), 
-         log(rt) > mean(log(rt) - 2 * sd(log(rt)))) %>%
+         log(rt) > mean(log(rt) - 2 * sd(log(rt)))) 
+m_age_4ipad <- mean(d.bing$age)
+min_age_4ipad <- min(d.bing$age)
+max_age_4ipad <- max(d.bing$age)
+
+d.bing <- d.bing %>%
   # clean up
-  select(subid, game, trial.num, trial.type, q, resp) %>%
-  mutate(agegroup = "kids") %>%
+  select(subid, agegroup, game, trial.num, trial.type, q, resp) %>%
+  mutate(location = "preschool", 
+         modality = "iPad") %>%
   ungroup() 
+n.bing.final <- n.unique(d.bing$subid)
 
-d <- rbind(d.turk, d.bing)
+d.cdm <- read.csv("../long_data/long_data_cdm.csv") %>%
+  filter(agegroup == 4 | agegroup == 5 | agegroup == 6) 
+n.cdm.initial <- n.unique(d.cdm$subid)
 
-ages <- select(read.csv("../long_data/Neginhib_demo_bing.csv"), c(Sub_ID, age))
-names(ages) <- c("subid", "ages")
-d.bing <- merge(d.bing, ages)
-ages <- aggregate(ages ~ subid, d.bing, mean)
+d.cdm <- d.cdm %>%
+  # remove any child who played fewer than 150 trials (means they didn't complete at least half of the final game)
+  group_by(subid) %>%
+  mutate(ntrials = n()) %>%
+  filter(ntrials > 150) %>%
+  ungroup() %>%
+  group_by(agegroup) %>% #Note: doing rt trimming within age group for this sample
+  # create resp and rt vars
+  mutate(resp = factor(response, levels=c("Y","N"), labels=c("upper","lower")), 
+         q = rt/1000) %>%
+  # remove outlier RTs
+  filter(rt > 0) %>% # filtering the mysterious neg rt...
+  filter(log(rt) < mean(log(rt) + 2 * sd(log(rt))), 
+         log(rt) > mean(log(rt) - 2 * sd(log(rt)))) %>%
+  ungroup() 
+m_age_comp <- aggregate(age ~ agegroup, d.cdm, mean)
+min_age_comp <- aggregate(age ~ agegroup, d.cdm, min)
+max_age_comp <- aggregate(age ~ agegroup, d.cdm, max)
+
+d.cdm <- d.cdm %>%
+  # clean up
+  select(subid, agegroup, game, trial.num, trial.type, q, resp) %>%
+  mutate(location = "museum", 
+         modality = "computer") %>%
+  ungroup() 
+n.cdm.final <- n.unique(d.cdm$subid)
+ns.cdm <- aggregate(subid ~ agegroup, d.cdm, n.unique)
+
+d <- rbind(d.turk, d.bing, d.cdm)
+
+d$subid <- factor(d$subid)
+d$location <- factor(d$location)
+d$modality <- factor(d$modality)
+d$agegroup <- factor(d$agegroup)
+d$agegroup_modality <- factor(paste(d$agegroup, d$modality, sep = "_"), levels = c("4_iPad", "4_computer", "5_computer", "6_computer", "adults_computer"))
+d$trial.type <- factor(d$trial.type, levels = c("control", "inhib", "unambiguous", "implicature", "positive", "negative"))
+
 ```
 
-We have `r n.unique(d.turk$subid)` adult participants and `r n.unique(d.bing$subid)` child participants.  Children ranged in age from `r round(min(ages$ages), digits = 2)` to `r round(max(ages$ages), digits = 2)` with a mean age of `r round(mean(ages$ages), digits = 2)`.  
+We excluded `r n.turk.initial - n.turk.final` adult participants, `r n.bing.initial - n.bing.final` child iPad participants (Bing), and `r n.cdm.initial - n.cdm.final` child computer participants (CDM) for failing to complete at least half of the trials in each game.  This left a final sample of `r n.turk.final` adult participants, `r n.bing.final` child iPad participants (Bing), and `r n.cdm.final` child computer participants (CDM).  
+
+The iPad/bing sample ranged in age from `r min_age_4ipad` to `r max_age_4ipad`, with a mean age of `r m_age_4ipad`.  The computer/cdm sample included `r ns.cdm[1,2]` 4-year-olds (age range `r min_age_comp[1,2]`-`r max_age_comp[1,2]`, mean age = `r m_age_comp[1,2]`), `r ns.cdm[2,2]` 5-year-olds (age range `r min_age_comp[2,2]`-`r max_age_comp[2,2]`, mean age = `r m_age_comp[2,2]`), and `r ns.cdm[3,2]` 6-year-olds (age range `r min_age_comp[3,2]`-`r max_age_comp[3,2]`, mean age = `r m_age_comp[3,2]`).  
 
 # Initial analysis
 
 ## Proportion Correct
 
-Proportion correct for adults:
-```{r propcorrect_adults}
-d.turk$correct <- as.numeric(as.character(factor(d.turk$resp, levels=c("upper","lower"), labels=c("1","0"))))==1
-d.turk$trial.crit <- factor(d.turk$trial.type %in% c("inhib","implicature","negative"), 
+Proportion correct:
+```{r propcorrect}
+d$correct <- as.numeric(as.character(factor(d$resp, levels=c("upper","lower"), labels=c("1","0"))))==1
+d$trial.crit <- factor(d$trial.type %in% c("inhib","implicature","negative"), 
                        levels = c(FALSE, TRUE), 
                        labels = c("control","target"))
-d.turk$game <- factor(d.turk$game, levels=c("inhibition","implicature","negation"))
+d$game <- factor(d$game, levels=c("inhibition","implicature","negation"))
 
-ms <- d.turk %>%
-  group_by(game, trial.crit, subid) %>%
+ms <- d %>%
+  group_by(game, trial.crit, subid, agegroup_modality) %>%
   summarise(m = mean(correct)) %>%
-  group_by(game, trial.crit) %>%
+  group_by(game, trial.crit, agegroup_modality) %>%
   summarise(cih = ci.high(m),
             cil = ci.low(m),
             m = mean(m)) 
@@ -160,51 +215,25 @@ qplot(data=ms, x=game, y=m, fill=trial.crit,
       stat="identity", position="dodge", geom="bar") + 
   geom_errorbar(aes(ymin=cil, ymax=cih), 
                 position=position_dodge(.9), width=0) + 
+  facet_grid( ~ agegroup_modality) +
   ylab("Proportion correct") + xlab("Trial Type") +
   scale_fill_hue(name="Trial Type") +
   theme_bw()
 ```
 
-Proportion correct for children: 
-```{r propcorrect_kids}
-d.bing$correct <- as.numeric(as.character(factor(d.bing$resp, levels=c("upper","lower"), labels=c("1","0"))))==1
-d.bing$trial.crit <- factor(d.bing$trial.type %in% c("inhib","implicature","negative"), 
-                       levels = c(FALSE, TRUE), 
-                       labels = c("control","target"))
-d.bing$game <- factor(d.bing$game, levels=c("inhibition","implicature","negation"))
-
-ms <- d.bing %>%
-  group_by(game, trial.crit, subid) %>%
-  summarise(m = mean(correct)) %>%
-  group_by(game, trial.crit) %>%
-  summarise(cih = ci.high(m),
-            cil = ci.low(m),
-            m = mean(m)) 
-
-qplot(data=ms, x=game, y=m, fill=trial.crit,
-      stat="identity", position="dodge", geom="bar") + 
-  geom_errorbar(aes(ymin=cil, ymax=cih), 
-                position=position_dodge(.9), width=0) + 
-  ylab("Proportion correct") + xlab("Trial Type") +
-  scale_fill_hue(name="Trial Type") +
-  theme_bw()
-```
-
-So kids are much less accurate than adults on target trials, especially in the implicature and negation games.
+So kids are much less accurate than adults on target trials, especially in the implicature and negation games.  It looks like 4-year-olds are a little more accurate on the computer, and children show some improvement on the implicatures game across development but maybe not so much improvement across development on the negation game?
 
 ## Reaction time
 
 What about reaction time?  Here we just look at RTs on correct trials (outlier RTs were trimmed earlier when the data was loaded).
 
-Adult RTs: 
-
 ```{r RT_adults}
 #Plot data
-ms <- d.turk %>%
+ms <- d %>%
   filter(correct == TRUE) %>%
-  group_by(game, trial.crit, subid) %>%
+  group_by(game, trial.crit, subid, agegroup_modality) %>%
   summarise(m = mean(q)) %>%
-  group_by(game, trial.crit) %>%
+  group_by(game, trial.crit, agegroup_modality) %>%
   summarise(cih = ci.high(m),
             cil = ci.low(m),
             m = mean(m)) 
@@ -213,57 +242,32 @@ qplot(data=ms, x=game, y=m, fill=trial.crit,
       stat="identity", position="dodge", geom="bar") + 
   geom_errorbar(aes(ymin=cil, ymax=cih), 
                 position=position_dodge(.9), width=0) + 
+  facet_grid( ~ agegroup_modality) +
   ylab("Reaction Time (s)") + xlab("Trial Type") +
   scale_fill_hue(name="Trial Type") +
   theme_bw()
 ```
 
-Kid RTs: 
-```{r RT_kids}
-#Plot data
-ms <- d.bing %>%
-  filter(correct == TRUE) %>%
-  group_by(game, trial.crit, subid) %>%
-  summarise(m = mean(q)) %>%
-  group_by(game, trial.crit) %>%
-  summarise(cih = ci.high(m),
-            cil = ci.low(m),
-            m = mean(m)) 
-
-qplot(data=ms, x=game, y=m, fill=trial.crit,
-      stat="identity", position="dodge", geom="bar") + 
-  geom_errorbar(aes(ymin=cil, ymax=cih), 
-                position=position_dodge(.9), width=0) + 
-  ylab("Reaction Time (s)") + xlab("Trial Type") +
-  scale_fill_hue(name="Trial Type") +
-  theme_bw()
-```
-
-So it looks like for both adults and children there is only an effect of trial type (e.g. control vs. target) on the inhibition game, where both adults and children were slower on the target trials.  
+So it looks like for both adults and children there is only an effect of trial type (e.g. control vs. target) on the inhibition game, where both adults and children were slower on the target trials.  4-year-olds were much faster on the iPad than on the computer, which is good to know!
 
 # Diffusion Analysis
 
 For the diffusion analysis, we estimated parameters separately for each condition within each game.  Parameters are estimated within each subject and then we aggregate across subjects to get means & confidence intervals on the parameters.
 
-I'm not 100% sure this is the right way to do this analysis.  In particular, I've read a lot papers with this analysis that say only drift rate should vary within each task?  For example: "In addition, across experimental conditions that vary in difficulty (and are randomly intermixed at test), changes in accuracy, RT distributions, and the relative speeds of correct and error responses must all be captured by changes in only one parameter of the model, drift rate. Across experimental conditions that vary in speed/accuracy criteria (e.g., speed versus accuracy instructions), all the changes in accuracy, RT distributions, and the relative speeds of correct and error responses are usually captured by changes only in the settings of the response criteria. The criteria cannot be adjusted as a function of difficulty because it would be necessary for the system to know which level of difficulty was being tested before drift rate could be determined. It is also usually assumed that the processes that make up the nondecision component of the model do not vary with difficulty" (McKoon & Ratcliff, 2013).  So I think we might need to think more about how we should be constraining these models.
-
-## Plot densities of correct (upper) and incorrect (lower) responses
-
-Plots show density of RTs for correct (green line, above) and incorrect responses (red line, below), for each trial type.  You can kind of see the speed-accuracy tradeoff in some of these plots, especially the inhibition trials.  
+## Plot densities
+Plots show density of RTs for correct (pink) and incorrect responses (green), for each trial type.  You can kind of see the speed-accuracy tradeoff in some of these plots, especially the inhibition trials.  Also, it is clear that children are generally much more prone to fast errors.
 
 ```{r plots1}
 #Make a bunch of plots:
-trialtypes <- c("control", "inhib", "unambiguous", "implicature", "positive", "negative")
-
-for (i in 1:length(trialtypes)) {
-  print(paste("Plot of ",trialtypes[i],", adults", sep=""))
-  wiener.plot(subset(d.turk, agegroup == "adults" & trial.type == trialtypes[i], select=c(q, resp)))
-  print(paste("Plot of ",trialtypes[i],", kids", sep=""))
-  wiener.plot(subset(d.bing, agegroup == "kids" & trial.type == trialtypes[i], select=c(q, resp)))
-}
+ggplot(d, aes(x=q)) + 
+  geom_density(aes(group=resp, colour=resp, fill=resp), alpha=0.3) +
+  facet_grid(agegroup_modality ~ trial.type, scales = "free") + 
+  scale_fill_hue(labels = c("correct", "incorrect")) +
+  scale_color_hue(labels = c("correct", "incorrect")) +
+  theme_bw()
 ```
 
-# Estimating parameters
+## Estimating parameters
 
 Calculate parameters for each condition separately, within each subject.  Then aggregate across subjects to get means & confidence intervals on the parameters, and plot the parameters across each game & condition.
 
@@ -274,10 +278,12 @@ sub.pars <- data.frame(Separation = numeric(),
                        Drift = numeric(),
                        Trial.Type = character(),
                        SubID = character(), 
-                       Age = character())
+                       Age = character(),
+                       Modality = character())
 sub.pars$Trial.Type <- as.character(sub.pars$Trial.Type)
 sub.pars$SubID <- as.character(sub.pars$SubID)
 sub.pars$Age <- as.character(sub.pars$Age)
+sub.pars$Modality <- as.character(sub.pars$Modality)
 
 temp.pars <- sub.pars
 
@@ -286,6 +292,7 @@ d$resp <- as.character(d$resp)
 ```
 
 ```{r estpars}
+trialtypes <- c("control", "inhib", "unambiguous", "implicature", "positive", "negative")
 subs <- unique(d$subid)
 
 for (j in 1:length(subs)) {
@@ -295,12 +302,15 @@ for (j in 1:length(subs)) {
     dat <- as.data.frame(subset(d, trial.type == ttype & subid == sid))
     opt <- optim(c(1, .1, .1, 1), wiener_deviance, 
                  dat=select(dat, c(q, resp)), method="Nelder-Mead")
-    pars <- c(opt$par, ttype, sid, dat$agegroup[1])
+    pars <- c(opt$par, ttype, sid, as.character(dat$agegroup[1]), as.character(dat$modality[1]))
     temp.pars[i,] <- pars
   }
   sub.pars <- rbind(temp.pars, sub.pars)
+  temp.pars <- temp.pars[0, ]
 } 
 ```
+
+### Parameter plot 1 (terrible):
 
 First plot the difference between parameters between conditions in different games:
 
@@ -316,11 +326,12 @@ sub.pars$Drift <- as.numeric(sub.pars$Drift)
 
 sub.pars.ms <- sub.pars %>%
   gather(Param, Value, Separation:Drift) %>%
-  group_by(Age, Condition, Game, Param) %>%
+  group_by(Age, Modality, Condition, Game, Param) %>%
   summarise(M = mean(Value),
             cih = ci.high(Value),
             cil = ci.low(Value))
 sub.pars.ms$Game <- factor(sub.pars.ms$Game, levels = c("inhib.game", "imp.game", "neg.game"))
+sub.pars.ms$AgeModality <- paste(sub.pars.ms$Age, sub.pars.ms$Modality, sep = "_")
 
 qplot(data = subset(sub.pars.ms, Age == "adults"), x = Condition, color = Condition,
       y = M, ymax=cih, ymin=cil, 
@@ -329,54 +340,73 @@ qplot(data = subset(sub.pars.ms, Age == "adults"), x = Condition, color = Condit
   ggtitle("Adults") +
   theme_bw()
 
-qplot(data = subset(sub.pars.ms, Age == "kids"), x = Condition, color = Condition,
+qplot(data = subset(sub.pars.ms, Age == "4" & Modality == "iPad"), x = Condition, color = Condition,
       y = M, ymax=cih, ymin=cil, 
       geom = "pointrange", position = position_dodge(.1)) +
   facet_grid(Param ~ Game, scales = "free") +
-  ggtitle("Kids") +
+  ggtitle("4s, iPad") +
+  theme_bw()
+
+
+qplot(data = subset(sub.pars.ms, Age == "4" & Modality == "computer"), x = Condition, color = Condition,
+      y = M, ymax=cih, ymin=cil, 
+      geom = "pointrange", position = position_dodge(.1)) +
+  facet_grid(Param ~ Game, scales = "free") +
+  ggtitle("4s, iPad") +
+  theme_bw()
+
+qplot(data = subset(sub.pars.ms, Age == "5" & Modality == "computer"), x = Condition, color = Condition,
+      y = M, ymax=cih, ymin=cil, 
+      geom = "pointrange", position = position_dodge(.1)) +
+  facet_grid(Param ~ Game, scales = "free") +
+  ggtitle("5s, iPad") +
+  theme_bw()
+
+qplot(data = subset(sub.pars.ms, Age == "6" & Modality == "computer"), x = Condition, color = Condition,
+      y = M, ymax=cih, ymin=cil, 
+      geom = "pointrange", position = position_dodge(.1)) +
+  facet_grid(Param ~ Game, scales = "free") +
+  ggtitle("6s, iPad") +
   theme_bw()
 
 ```
 
-```{r power}
-kids.inhib <- filter(sub.pars, Age == "kids" & Game == "inhib.game")
-kids.imp <- filter(sub.pars, Age == "kids" & Game == "imp.game")
-kids.neg <- filter(sub.pars, Age == "kids" & Game == "neg.game")
-
-#inhib Bias
-cohen.d(kids.inhib$Bias, kids.inhib$Condition, pooled = F, paired = T, na.rm = T)
-
-#imp Separation
-cohen.d(kids.imp$Separation, kids.imp$Condition, pooled = F, paired = T, na.rm = T)
-
-#imp Drift
-cohen.d(kids.imp$Drift, kids.imp$Condition, pooled = F, paired = T, na.rm = T)
-
-#neg drift
-cohen.d(kids.neg$Drift, kids.neg$Condition, pooled = F, paired = T, na.rm = T)
-```
-
 It looks like performance on these games is driven by different processes in both adults and children: 
 
+For adults computer vs. 4s iPad: 
 - The difference between conditions in the inhibition game is driven largely by the stronger bias towards the incorrect (lower) boundary in the target condition.  
 - In the implicatures game, the control condition has a higher separation boundary (e.g. more conservative decision criteria?) but also a higher drift rate; note that this could explain the similar RTs in these two conditions.  
 - In the negation game, it looks like the two conditions (positive v. negative sentences) are really similar, except for kids, where the drift rate is much lower in the target condition (i.e. negative sentences).  Note that this looks like the most striking difference between adults and kids, except for main effects (e.g. kids have higher separation boundaries, longer non-decision times, and slower drift rates, consistent with past work)
 
+### Parameter Plot 2 (less terrible?): 
+
+With the full data set (e.g. cdm data), these plots are a nightmare.  I think this is better: 
+
+```{r plotpars2}
+qplot(data = sub.pars.ms, x = AgeModality, color = Condition,
+      y = M, ymax=cih, ymin=cil, 
+      geom = "pointrange", position = position_dodge(.25)) +
+  facet_grid(Param ~ Game, scales = "free") +
+  theme_bw()
+```
+
+### Plot diffusion process:
+
 We can also take these parameters and visualize the actual diffusion process for each game/condition/age group:
 
-```{r parvis, fig.width=8, fig.height=10}
+```{r parvis, fig.width=10, fig.height=6}
 #Visualize diffusion process for each game & condition
 games <- c("inhib.game", "imp.game", "neg.game")
-agegroup <- unique(sub.pars.ms$Age)
+agemodality <- unique(sub.pars.ms$AgeModality)
 p <- list()
 
 x <- 5
 y <- 6
 
-for (a in 1:length(agegroup)) {
+for (a in 1:length(agemodality)) {
   for (g in 1:length(games)) {
     params <- sub.pars.ms %>%
-      subset(Game == games[g] & Age == agegroup[a]) %>%
+      subset(Game == games[g] & AgeModality == agemodality[a]) %>%
       gather(Name, Value, M:cil) %>%
       unite(Stats, Param, Name) %>%
       spread(Stats, Value)
@@ -386,14 +416,17 @@ for (a in 1:length(agegroup)) {
     
     drift_ribbon <- data.frame(xvals = c(params$Non.Decision_M, #non-decision time
                                          (params$Separation_M - params$yint_cih) / params$Drift_cih, #Point where high drift line hits separation boundary
-                                         (params$Separation_M - params$yint_cil) / params$Drift_cil), #Point where low drift line hits separation boundary
+                                         (params$Separation_M - params$yint_M) / params$Drift_M, #Point where drift line hits separation boundary
+                                         ifelse(params$Drift_cil > 0, (params$Separation_M - params$yint_cil) / params$Drift_cil, (0 - params$yint_cil) / params$Drift_cil)), #Point where low drift line hits separation boundary or 0
                                ymin = c(params$Bias_M * params$Separation_M, #point where drift starts
                                         params$Drift_cil*((params$Separation_M - params$yint_cih) / params$Drift_cih) + params$yint_cil, #point where low drift is when high drift ends
-                                        params$Separation_M), #point where low drift ends
+                                        params$Drift_cil*((params$Separation_M - params$yint_M) / params$Drift_M) + params$yint_cil, #point where low drift is when drift ends
+                                        ifelse(params$Drift_cil > 0, params$Separation_M, 0)), #point where low drift ends
                                ymax = c(params$Bias_M * params$Separation_M, #point where drift starts
                                         params$Separation_M, #point where drift ends
+                                         params$Separation_M, #point where drift ends
                                         params$Separation_M),#point where drift ends
-                               Condition = rep(params$Condition, 3))
+                               Condition = rep(params$Condition, 4))
     
     nd_ribbon <- data.frame(xmin = params$Non.Decision_cil,
                             xmax = params$Non.Decision_cih,
@@ -409,7 +442,7 @@ for (a in 1:length(agegroup)) {
     
     df <- data.frame()
     
-    p[[g + 3*(a-1)]] <- ggplot(df) + ylim(c(0, y)) + xlim(c(0, x)) + 
+    p[[g + 3*(a-1)]] <- ggplot(df) + coord_cartesian(xlim = c(0, x), ylim = c(0, y)) + 
       geom_point() +  theme_bw() +
       geom_segment(data = params, 
                    aes(x = Non.Decision_M, 
@@ -443,15 +476,21 @@ for (a in 1:length(agegroup)) {
       geom_vline(data = params, 
                  aes(xintercept = Non.Decision_M, color = Condition)) + 
       theme(legend.position=c(.8, .8)) +
-      xlab("Time (seconds)") + ylab("Boundary Separation") + ggtitle(paste(agegroup[a], games[g], sep = " ")) 
+      xlab("Time (seconds)") + ylab("Boundary Separation") + ggtitle(paste(agemodality[a], games[g], sep = " ")) 
   } 
 }
 
-plotlist <- c(list(p[[1]], p[[4]], p[[2]], p[[5]], p[[3]], p[[6]]), ncol = 2, nrow = 3)
+plotlist <- c(list(p[[4]], p[[1]], p[[7]], p[[10]], p[[13]], 
+                   p[[5]], p[[2]], p[[8]], p[[11]], p[[14]],
+                   p[[6]], p[[3]], p[[9]], p[[12]], p[[15]]), ncol = 5, nrow = 3)
 do.call(grid.arrange, plotlist)
 ```
 
 This makes some differences between adults and kids really jump out: first, kids are generally more conservative, as indicated by the higher separation boundary.  Particularly striking are the slow drift rates, especially for implicature trials and negation trials.  Note that in these two conditions the CIs on the drift rate dip below 0 (i.e. the diffusion process actually heads towards the lower/incorrect boundary). This is consistent with the fact that kids performed around chance on these trials.  
+
+For kids comp vs. kids iPad, it looks like there is more variability on the iPad?  But in some ways kids on the iPad actually look more like adults: For example, in the inhibition game, kids don't start to show the inhibition bias until age 6 on the computer, but they show it at 4 on the iPad (this is a little hard to see in these graphs, because of the difference in boundary separation, but is clearer in the previous set of graphs that just compares param values across different agegroups/modalities).  And in the implicatures game, kids show the difference in boundary separation on the iPad, but not really on the computer, though it looks like this might be a power issue for the computer data set (?).  In other ways, kids on the computer look more like adults on the computer, especially in overall parameter values.  
+
+On the negation game, interestingly, there isn't a ton of developmental change; even 6 year olds are still really struggling on this game, whereas adults have no problem at all.  I think this is really interesting, though isn't clear what the kids are missing. 
 
 The problem with this plot is that, when they are all plotted on the same axes (to show the differences between games and agegroups more clearly), the adult plots are hard to read.  I'm zooming in here: 
 ```{r viszoom}
