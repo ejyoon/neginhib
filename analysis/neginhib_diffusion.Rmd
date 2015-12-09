@@ -55,37 +55,6 @@ ci.low <- function(x) {
   quantile(bootstrap(1:length(x),1000,theta,x)$thetastar,.025)}
 ci.high <- function(x) {
   quantile(bootstrap(1:length(x),1000,theta,x)$thetastar,.975)}
-
-# Fixing up the wiener_plot function to deal with missing data
-wiener.plot <- function (dat) 
-{
-  rt = as.double(dat$q)
-  rc = as.numeric(as.factor(dat$resp))
-  dpos = tryCatch(density(rt[rc == 1], from = 0),error=function(e) NA)
-  dneg = tryCatch(density(rt[rc == 2], from = 0),error=function(e) NA)
-  maxt = max(pretty(max(rt)))
-  
-  maxd <- NA
-  if(is.na(dpos[1])){
-    maxd <- max(dneg$y)
-  } else if(is.na(dneg[1])){
-    maxd <- max(dpos$y)
-  } else {
-    maxd <- max(dpos$y, dneg$y)
-  }
-  
-  par(mar = c(0, 5, 0, 0), mfcol = c(2, 1), ask = FALSE)
-  plot(dpos, xlim = c(0, maxt), ylim = c(0, maxd), las = 2, 
-       lwd = 2, col = "green3", main = "", ylab = "", ask = FALSE)
-  rug(rt[rc == 1], col = "green3")
-  mtext("Density of positive responses", side = 2, line = 4, 
-        cex = 0.8)
-  plot(dneg, xlim = c(0, maxt), ylim = c(maxd, 0), las = 2, 
-       lwd = 2, col = "red", main = "", ylab = "", ask = FALSE)
-  mtext("Density of negative responses", side = 2, line = 4, 
-        cex = 0.8)
-  rug(rt[rc == 2], col = "red", side = 3)
-}
 ```
 
 Load in data
@@ -189,14 +158,14 @@ d$trial.type <- factor(d$trial.type, levels = c("control", "inhib", "unambiguous
 
 We excluded `r n.turk.initial - n.turk.final` adult participants, `r n.bing.initial - n.bing.final` child iPad participants (Bing), and `r n.cdm.initial - n.cdm.final` child computer participants (CDM) for failing to complete at least half of the trials in each game.  This left a final sample of `r n.turk.final` adult participants, `r n.bing.final` child iPad participants (Bing), and `r n.cdm.final` child computer participants (CDM).  
 
-The iPad/bing sample ranged in age from `r min_age_4ipad` to `r max_age_4ipad`, with a mean age of `r m_age_4ipad`.  The computer/cdm sample included `r ns.cdm[1,2]` 4-year-olds (age range `r min_age_comp[1,2]`-`r max_age_comp[1,2]`, mean age = `r m_age_comp[1,2]`), `r ns.cdm[2,2]` 5-year-olds (age range `r min_age_comp[2,2]`-`r max_age_comp[2,2]`, mean age = `r m_age_comp[2,2]`), and `r ns.cdm[3,2]` 6-year-olds (age range `r min_age_comp[3,2]`-`r max_age_comp[3,2]`, mean age = `r m_age_comp[3,2]`).  
+The iPad/bing sample ranged in age from `r min_age_4ipad` to `r max_age_4ipad`, with a mean age of `r round(m_age_4ipad, digits = 2)`.  The computer/cdm sample included `r ns.cdm[1,2]` 4-year-olds (age range `r min_age_comp[1,2]`-`r max_age_comp[1,2]`, mean age = `r round(m_age_comp[1,2], digits = 2)`), `r ns.cdm[2,2]` 5-year-olds (age range `r min_age_comp[2,2]`-`r max_age_comp[2,2]`, mean age = `r round(m_age_comp[2,2], digits = 2)`), and `r ns.cdm[3,2]` 6-year-olds (age range `r min_age_comp[3,2]`-`r max_age_comp[3,2]`, mean age = `r round(m_age_comp[3,2], digits = 2)`).  
 
 # Initial analysis
 
 ## Proportion Correct
 
 Proportion correct:
-```{r propcorrect}
+```{r propcorrect parvis, fig.width=10, fig.height=5}
 d$correct <- as.numeric(as.character(factor(d$resp, levels=c("upper","lower"), labels=c("1","0"))))==1
 d$trial.crit <- factor(d$trial.type %in% c("inhib","implicature","negative"), 
                        levels = c(FALSE, TRUE), 
@@ -227,7 +196,7 @@ So kids are much less accurate than adults on target trials, especially in the i
 
 What about reaction time?  Here we just look at RTs on correct trials (outlier RTs were trimmed earlier when the data was loaded).
 
-```{r RT_adults}
+```{r RT_adults parvis, fig.width=10, fig.height=5}
 #Plot data
 ms <- d %>%
   filter(correct == TRUE) %>%
@@ -257,7 +226,7 @@ For the diffusion analysis, we estimated parameters separately for each conditio
 ## Plot densities
 Plots show density of RTs for correct (pink) and incorrect responses (green), for each trial type.  You can kind of see the speed-accuracy tradeoff in some of these plots, especially the inhibition trials.  Also, it is clear that children are generally much more prone to fast errors.
 
-```{r plots1}
+```{r plots1 parvis, fig.width=10, fig.height=8}
 #Make a bunch of plots:
 ggplot(d, aes(x=q)) + 
   geom_density(aes(group=resp, colour=resp, fill=resp), alpha=0.3) +
@@ -314,7 +283,7 @@ for (j in 1:length(subs)) {
 
 First plot the difference between parameters between conditions in different games:
 
-```{r plotpars}
+```{r plotpars parvis, fig.width=6, fig.height=4}
 sub.pars <- sub.pars %>%
   mutate(Condition = ifelse(Trial.Type == "control" | Trial.Type == "positive" | Trial.Type == "unambiguous", "Control", "Target"),
          Game = ifelse(Trial.Type == "control" | Trial.Type == "inhib", "inhib.game", ifelse(Trial.Type == "positive" | Trial.Type == "negative", "neg.game", "imp.game")))
@@ -380,9 +349,9 @@ For adults computer vs. 4s iPad:
 
 ### Parameter Plot 2 (less terrible?): 
 
-With the full data set (e.g. cdm data), these plots are a nightmare.  I think this is better: 
+These plots are a nightmare.  
 
-```{r plotpars2}
+```{r plotpars2 parvis, fig.width=8, fig.height=6}
 qplot(data = sub.pars.ms, x = AgeModality, color = Condition,
       y = M, ymax=cih, ymin=cil, 
       geom = "pointrange", position = position_dodge(.25)) +
@@ -394,14 +363,14 @@ qplot(data = sub.pars.ms, x = AgeModality, color = Condition,
 
 We can also take these parameters and visualize the actual diffusion process for each game/condition/age group:
 
-```{r parvis, fig.width=10, fig.height=6}
+```{r parvis, fig.width=11, fig.height=8}
 #Visualize diffusion process for each game & condition
 games <- c("inhib.game", "imp.game", "neg.game")
 agemodality <- unique(sub.pars.ms$AgeModality)
 p <- list()
 
-x <- 5
-y <- 6
+x <- 3
+y <- 5
 
 for (a in 1:length(agemodality)) {
   for (g in 1:length(games)) {
@@ -475,8 +444,9 @@ for (a in 1:length(agemodality)) {
       geom_hline(yintercept = 0, linetype = "dashed") + 
       geom_vline(data = params, 
                  aes(xintercept = Non.Decision_M, color = Condition)) + 
-      theme(legend.position=c(.8, .8)) +
-      xlab("Time (seconds)") + ylab("Boundary Separation") + ggtitle(paste(agemodality[a], games[g], sep = " ")) 
+      scale_fill_discrete(guide = FALSE) +
+      scale_color_discrete(guide = FALSE) +
+      xlab("Time (seconds)") + ylab("Boundary Separation") + ggtitle(paste(agemodality[a], "\n", games[g], sep = " ")) 
   } 
 }
 
@@ -485,6 +455,8 @@ plotlist <- c(list(p[[4]], p[[1]], p[[7]], p[[10]], p[[13]],
                    p[[6]], p[[3]], p[[9]], p[[12]], p[[15]]), ncol = 5, nrow = 3)
 do.call(grid.arrange, plotlist)
 ```
+
+Pink = control condition and green = target condition (I removed the legend to make more space)
 
 This makes some differences between adults and kids really jump out: first, kids are generally more conservative, as indicated by the higher separation boundary.  Particularly striking are the slow drift rates, especially for implicature trials and negation trials.  Note that in these two conditions the CIs on the drift rate dip below 0 (i.e. the diffusion process actually heads towards the lower/incorrect boundary). This is consistent with the fact that kids performed around chance on these trials.  
 
