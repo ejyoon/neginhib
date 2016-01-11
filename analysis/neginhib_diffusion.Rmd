@@ -548,41 +548,58 @@ for (g in 1:length(games)) {
 print(p)
 ```
 
-```{r stats}
+# Statistics
+
+## Adult data t-tests
+```{r adults}
 sub.pars$Age <- factor(sub.pars$Age, levels = c("adults", "4", "5", "6"))
 sub.pars$Condition <- factor(sub.pars$Condition)
 
-#First just look at changes in paramaters in general across age: 
-sep.model <- lmer(Separation ~ Age + (1 | SubID), data = sub.pars)
-summary(sep.model)
+#adult t tests
+inhib.bias <- sub.pars %>%
+  filter(Age == "adults", Game == "inhib.game") %>%
+  select(Bias, SubID, Condition) %>%
+  spread(Condition, Bias)
 
-nd.model <- lmer(Non.Decision ~ Age + (1 | SubID), data = sub.pars)
-summary(nd.model)
+t.test(inhib.bias$Control, inhib.bias$Target, paired = T)
 
-bias.model <- lmer(Bias ~ Age + (1 | SubID), data = sub.pars)
-summary(bias.model)
+imp.sep <- sub.pars %>%
+  filter(Age == "adults", Game == "imp.game") %>%
+  select(Separation, SubID, Condition) %>%
+  spread(Condition, Separation)
 
-drift.model <- lmer(Drift ~ Age + (1 | SubID), data = sub.pars)
-summary(drift.model)
+t.test(imp.sep$Control, imp.sep$Target, paired = T)
 
-#Look at continuous across age group, just children
-sub.pars.cont <- filter(sub.pars, Age != "adults")
-sub.pars.cont$Age <- as.numeric(as.character(sub.pars.cont$Age))
+imp.drift <- sub.pars %>%
+  filter(Age == "adults", Game == "imp.game") %>%
+  select(Drift, SubID, Condition) %>%
+  spread(Condition, Drift)
 
-cont.sep.model <- lmer(Separation ~ Age + (1 | SubID), data = sub.pars.cont)
-summary(cont.sep.model)
+t.test(imp.drift$Control, imp.drift$Target, paired = T)
 
-cont.nd.model <- lmer(Non.Decision ~ Age + (1 | SubID), data = sub.pars.cont)
-summary(cont.nd.model)
+neg.drift <- sub.pars %>%
+  filter(Age == "adults", Game == "neg.game") %>%
+  select(Drift, SubID, Condition) %>%
+  spread(Condition, Drift)
 
-cont.bias.model <- lmer(Bias ~ Age + (1 | SubID), data = sub.pars.cont)
-summary(cont.bias.model)
-
-cont.drift.model <- lmer(Drift ~ Age + (1 | SubID), data = sub.pars.cont)
-summary(cont.drift.model)
+t.test(neg.drift$Control, neg.drift$Target, paired = T)
 
 
+#Note: Non-decision is sig for negation game (and inhib too, I suspect), but I'm not really sure what to say about this, so I didn't discuss it in the paper.  Maybe we should though?
+neg.nd <- sub.pars %>%
+  filter(Age == "adults", Game == "neg.game") %>%
+  select(Non.Decision, SubID, Condition) %>%
+  spread(Condition, Non.Decision)
 
+t.test(neg.nd$Control, neg.nd$Target, paired = T)
+
+
+
+```
+
+## Developmental Change across games
+
+```{r childgames}
 ##Inhibition game
 inhib <- filter(sub.pars, Modality == "computer" & Game == "inhib.game")
 
@@ -627,4 +644,37 @@ summary(neg.bias)
 
 neg.drift <- lmer(Drift ~ Age * Condition + (1 | SubID), data = neg)
 summary(neg.drift)
+```
+
+## General Developmental Change
+
+```{r generaldev}
+#Look at changes in paramaters in general across age: 
+sep.model <- lmer(Separation ~ Age + (1 | SubID), data = sub.pars)
+summary(sep.model)
+
+nd.model <- lmer(Non.Decision ~ Age + (1 | SubID), data = sub.pars)
+summary(nd.model)
+
+bias.model <- lmer(Bias ~ Age + (1 | SubID), data = sub.pars)
+summary(bias.model)
+
+drift.model <- lmer(Drift ~ Age + (1 | SubID), data = sub.pars)
+summary(drift.model)
+
+#Look at continuous across age group, just children
+sub.pars.cont <- filter(sub.pars, Age != "adults")
+sub.pars.cont$Age <- as.numeric(as.character(sub.pars.cont$Age))
+
+cont.sep.model <- lmer(Separation ~ Age + (1 | SubID), data = sub.pars.cont)
+summary(cont.sep.model)
+
+cont.nd.model <- lmer(Non.Decision ~ Age + (1 | SubID), data = sub.pars.cont)
+summary(cont.nd.model)
+
+cont.bias.model <- lmer(Bias ~ Age + (1 | SubID), data = sub.pars.cont)
+summary(cont.bias.model)
+
+cont.drift.model <- lmer(Drift ~ Age + (1 | SubID), data = sub.pars.cont)
+summary(cont.drift.model)
 ```
