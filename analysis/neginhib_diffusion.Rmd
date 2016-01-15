@@ -36,7 +36,6 @@ library(knitr)
 library(bootstrap)
 library(gridExtra)
 library(effsize)
-library(lme4)
 ```
 
 ```{r setup, include=FALSE}
@@ -166,7 +165,7 @@ The iPad/bing sample ranged in age from `r min_age_4ipad` to `r max_age_4ipad`, 
 ## Proportion Correct
 
 Proportion correct:
-```{r propcorrect parvis, fig.width=10, fig.height=5}
+```{r propcorrect parvis, fig.width=5, fig.height=1.7}
 d$correct <- as.numeric(as.character(factor(d$resp, levels=c("upper","lower"), labels=c("1","0"))))==1
 d$trial.crit <- factor(d$trial.type %in% c("inhib","implicature","negative"), 
                        levels = c(FALSE, TRUE), 
@@ -174,19 +173,22 @@ d$trial.crit <- factor(d$trial.type %in% c("inhib","implicature","negative"),
 d$game <- factor(d$game, levels=c("inhibition","implicature","negation"))
 
 ms <- d %>%
-  group_by(game, trial.crit, subid, agegroup_modality) %>%
+  filter(modality == "computer") %>%
+  group_by(game, trial.crit, subid, agegroup) %>%
   summarise(m = mean(correct)) %>%
-  group_by(game, trial.crit, agegroup_modality) %>%
+  group_by(game, trial.crit, agegroup) %>%
   summarise(cih = ci.high(m),
             cil = ci.low(m),
             m = mean(m)) 
+ms$agegroup <- factor(ms$agegroup, levels = c("4", "5", "6", "adults"), c("4", "5", "6", "Adults"))
+ms$game <- factor(ms$game, labels = c("Inhibition", "Implicature", "Negation"))
 
-qplot(data=ms, x=game, y=m, fill=trial.crit,
-      stat="identity", position="dodge", geom="bar") + 
+qplot(data=ms, x=agegroup, y=m, color=trial.crit, 
+      geom="point", position=position_dodge(.2)) + 
   geom_errorbar(aes(ymin=cil, ymax=cih), 
-                position=position_dodge(.9), width=0) + 
-  facet_grid( ~ agegroup_modality) +
-  ylab("Proportion correct") + xlab("Trial Type") +
+                position=position_dodge(.2), width=0) + 
+  facet_grid( ~ game) +
+  ylab("Prop. correct") + xlab("Age Group") +
   scale_fill_hue(name="Trial Type") +
   theme_bw()
 ```
@@ -197,23 +199,26 @@ So kids are much less accurate than adults on target trials, especially in the i
 
 What about reaction time?  Here we just look at RTs on correct trials (outlier RTs were trimmed earlier when the data was loaded).
 
-```{r RT_adults parvis, fig.width=10, fig.height=5}
+```{r RT_adults parvis, fig.width=5, fig.height=1.7}
 #Plot data
 ms <- d %>%
-  filter(correct == TRUE) %>%
-  group_by(game, trial.crit, subid, agegroup_modality) %>%
+  filter(correct == TRUE, modality == "computer") %>%
+  group_by(game, trial.crit, subid, agegroup) %>%
   summarise(m = mean(q)) %>%
-  group_by(game, trial.crit, agegroup_modality) %>%
+  group_by(game, trial.crit, agegroup) %>%
   summarise(cih = ci.high(m),
             cil = ci.low(m),
             m = mean(m)) 
+ms$agegroup <- factor(ms$agegroup, levels = c("4", "5", "6", "adults"), labels = c("4", "5", "6", "Adults"))
+ms$game <- factor(ms$game, labels = c("Inhibition", "Implicature", "Negation"))
+#kable(summary(xflips.exp1)$coefficients, digits = 3)
 
-qplot(data=ms, x=game, y=m, fill=trial.crit,
-      stat="identity", position="dodge", geom="bar") + 
+qplot(data=ms, x=agegroup, y=m, color=trial.crit, 
+      geom="point", position=position_dodge(.2)) + 
   geom_errorbar(aes(ymin=cil, ymax=cih), 
-                position=position_dodge(.9), width=0) + 
-  facet_grid( ~ agegroup_modality) +
-  ylab("Reaction Time (s)") + xlab("Trial Type") +
+                position=position_dodge(.2), width=0) + 
+  facet_grid( ~ game) +
+  ylab("RT (s)") + xlab("Age Group") +
   scale_fill_hue(name="Trial Type") +
   theme_bw()
 ```
@@ -603,46 +608,46 @@ t.test(neg.nd$Control, neg.nd$Target, paired = T)
 ##Inhibition game
 inhib <- filter(sub.pars, Modality == "computer" & Game == "inhib.game")
 
-inhib.sep <- lmer(Separation ~ Age * Condition + (1 | SubID), data = inhib)
+inhib.sep <- lm(Separation ~ Age * Condition, data = inhib)
 summary(inhib.sep)
 
-inhib.nd <- lmer(Non.Decision ~ Age * Condition + (1 | SubID), data = inhib)
+inhib.nd <- lm(Non.Decision ~ Age * Condition, data = inhib)
 summary(inhib.nd)
 
-inhib.bias <- lmer(Bias ~ Age * Condition + (1 | SubID), data = inhib)
+inhib.bias <- lm(Bias ~ Age * Condition, data = inhib)
 summary(inhib.bias)
 
-inhib.drift <- lmer(Drift ~ Age * Condition + (1 | SubID), data = inhib)
+inhib.drift <- lm(Drift ~ Age * Condition, data = inhib)
 summary(inhib.drift)
 
 ##Implicature game
 imp <- filter(sub.pars, Modality == "computer" & Game == "imp.game")
 
-imp.sep <- lmer(Separation ~ Age * Condition + (1 | SubID), data = imp)
+imp.sep <- lm(Separation ~ Age * Condition, data = imp)
 summary(imp.sep)
 
-imp.nd <- lmer(Non.Decision ~ Age * Condition + (1 | SubID), data = imp)
+imp.nd <- lm(Non.Decision ~ Age * Condition, data = imp)
 summary(imp.nd)
 
-imp.bias <- lmer(Bias ~ Age * Condition + (1 | SubID), data = imp)
+imp.bias <- lm(Bias ~ Age * Condition, data = imp)
 summary(imp.bias)
 
-imp.drift <- lmer(Drift ~ Age * Condition + (1 | SubID), data = imp)
+imp.drift <- lm(Drift ~ Age * Condition, data = imp)
 summary(imp.drift)
 
 ##Negation game
 neg <- filter(sub.pars, Modality == "computer" & Game == "neg.game")
 
-neg.sep <- lmer(Separation ~ Age * Condition + (1 | SubID), data = neg)
+neg.sep <- lm(Separation ~ Age * Condition, data = neg)
 summary(neg.sep)
 
-neg.nd <- lmer(Non.Decision ~ Age * Condition + (1 | SubID), data = neg)
+neg.nd <- lm(Non.Decision ~ Age * Condition , data = neg)
 summary(neg.nd)
 
-neg.bias <- lmer(Bias ~ Age * Condition + (1 | SubID), data = neg)
+neg.bias <- lm(Bias ~ Age * Condition, data = neg)
 summary(neg.bias)
 
-neg.drift <- lmer(Drift ~ Age * Condition + (1 | SubID), data = neg)
+neg.drift <- lm(Drift ~ Age * Condition, data = neg)
 summary(neg.drift)
 ```
 
@@ -650,31 +655,31 @@ summary(neg.drift)
 
 ```{r generaldev}
 #Look at changes in paramaters in general across age: 
-sep.model <- lmer(Separation ~ Age + (1 | SubID), data = sub.pars)
+sep.model <- lm(Separation ~ Age, data = sub.pars)
 summary(sep.model)
 
-nd.model <- lmer(Non.Decision ~ Age + (1 | SubID), data = sub.pars)
+nd.model <- lm(Non.Decision ~ Age, data = sub.pars)
 summary(nd.model)
 
-bias.model <- lmer(Bias ~ Age + (1 | SubID), data = sub.pars)
+bias.model <- lm(Bias ~ Age, data = sub.pars)
 summary(bias.model)
 
-drift.model <- lmer(Drift ~ Age + (1 | SubID), data = sub.pars)
+drift.model <- lm(Drift ~ Age, data = sub.pars)
 summary(drift.model)
 
 #Look at continuous across age group, just children
 sub.pars.cont <- filter(sub.pars, Age != "adults")
 sub.pars.cont$Age <- as.numeric(as.character(sub.pars.cont$Age))
 
-cont.sep.model <- lmer(Separation ~ Age + (1 | SubID), data = sub.pars.cont)
+cont.sep.model <- lm(Separation ~ Age, data = sub.pars.cont)
 summary(cont.sep.model)
 
-cont.nd.model <- lmer(Non.Decision ~ Age + (1 | SubID), data = sub.pars.cont)
+cont.nd.model <- lm(Non.Decision ~ Age, data = sub.pars.cont)
 summary(cont.nd.model)
 
-cont.bias.model <- lmer(Bias ~ Age + (1 | SubID), data = sub.pars.cont)
+cont.bias.model <- lm(Bias ~ Age, data = sub.pars.cont)
 summary(cont.bias.model)
 
-cont.drift.model <- lmer(Drift ~ Age + (1 | SubID), data = sub.pars.cont)
+cont.drift.model <- lm(Drift ~ Age, data = sub.pars.cont)
 summary(cont.drift.model)
 ```
