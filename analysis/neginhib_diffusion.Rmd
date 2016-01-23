@@ -36,6 +36,7 @@ library(knitr)
 library(bootstrap)
 library(gridExtra)
 library(effsize)
+library(lme4)
 ```
 
 ```{r setup, include=FALSE}
@@ -59,12 +60,19 @@ ci.high <- function(x) {
 
 Load in data
 
+RT trimming:
+
+* Planned analysis: +/- 3SDs in log space
+* Post-hoc: also trim decisions < 200 ms from word onsent, > 15s (!) after offset, do this before planned outlier exclusion, doesn't change the results but makes things more reasonable. 
+
 ```{r loaddata}
+
 d.turk <- read.csv("../long_data/long_data_mturk.csv") 
 n.turk.initial <- n.unique(d.turk$subid)
 
 d.turk <- d.turk %>%
   # remove anyone who played fewer than 300 trials (means they did not complete at least half of the third game) or over 408 trials (means they completed the task twice, because 408 is max number of trials -- this only happened for one participant and I'm not sure how they were able to do this, so I'm rejecting them)
+  mutate(subid = factor(subid)) %>%
   group_by(subid) %>%
   mutate(ntrials = n()) %>%
   filter(ntrials > 300 & ntrials < 408) %>%
@@ -73,9 +81,10 @@ d.turk <- d.turk %>%
   mutate(resp = factor(response, levels=c("Y","N"), labels=c("upper","lower")), 
          q = rt/1000) %>%
   # remove outlier RTs
-  filter(rt > 0) %>% # filtering the mysterious neg rt...
-  filter(log(rt) < mean(log(rt) + 2 * sd(log(rt))), 
-         log(rt) > mean(log(rt) - 2 * sd(log(rt)))) %>%
+  filter(rt > 200, 
+         rt < 15000) %>% # filtering the mysterious neg rt...
+  filter(log(rt) < mean(log(rt) + 3 * sd(log(rt))), 
+         log(rt) > mean(log(rt) - 3 * sd(log(rt)))) %>%
   # clean up
   select(subid, game, trial.num, trial.type, q, resp) %>%
   mutate(location = "turk", 
@@ -98,9 +107,10 @@ d.bing <- d.bing %>%
   mutate(resp = factor(response, levels=c("Y","N"), labels=c("upper","lower")), 
          q = rt/1000) %>%
   # remove outlier RTs
-  filter(rt > 0) %>% # filtering the mysterious neg rt...
-  filter(log(rt) < mean(log(rt) + 2 * sd(log(rt))), 
-         log(rt) > mean(log(rt) - 2 * sd(log(rt)))) 
+  filter(rt > 200,
+         rt < 15000) %>% # filtering the mysterious neg rt...
+  filter(log(rt) < mean(log(rt) + 3 * sd(log(rt))), 
+         log(rt) > mean(log(rt) - 3 * sd(log(rt)))) 
 m_age_4ipad <- mean(d.bing$age)
 min_age_4ipad <- min(d.bing$age)
 max_age_4ipad <- max(d.bing$age)
@@ -109,15 +119,16 @@ d.bing <- d.bing %>%
   # clean up
   select(subid, agegroup, game, trial.num, trial.type, q, resp) %>%
   mutate(location = "preschool", 
-         modality = "iPad") %>%
+         modality = "iPad", 
+         agegroup = factor(agegroup)) %>%
   ungroup() 
 n.bing.final <- n.unique(d.bing$subid)
 
-d.cdm <- read.csv("../long_data/long_data_cdm.csv") %>%
+d.cdm.raw <- read.csv("../long_data/long_data_cdm.csv") %>%
   filter(agegroup == 4 | agegroup == 5 | agegroup == 6) 
-n.cdm.initial <- n.unique(d.cdm$subid)
+n.cdm.initial <- n.unique(d.cdm.raw$subid)
 
-d.cdm <- d.cdm %>%
+d.cdm <- d.cdm.raw %>%
   # remove any child who played fewer than 150 trials (means they didn't complete at least half of the final game)
   group_by(subid) %>%
   mutate(ntrials = n()) %>%
@@ -128,9 +139,10 @@ d.cdm <- d.cdm %>%
   mutate(resp = factor(response, levels=c("Y","N"), labels=c("upper","lower")), 
          q = rt/1000) %>%
   # remove outlier RTs
-  filter(rt > 0) %>% # filtering the mysterious neg rt...
-  filter(log(rt) < mean(log(rt) + 2 * sd(log(rt))), 
-         log(rt) > mean(log(rt) - 2 * sd(log(rt)))) %>%
+  filter(rt > 200,
+         rt < 15000) %>% # filtering the mysterious neg rt...
+  filter(log(rt) < mean(log(rt) + 3 * sd(log(rt))), 
+         log(rt) > mean(log(rt) - 3 * sd(log(rt)))) %>%
   ungroup() 
 m_age_comp <- aggregate(age ~ agegroup, d.cdm, mean)
 min_age_comp <- aggregate(age ~ agegroup, d.cdm, min)
@@ -138,21 +150,31 @@ max_age_comp <- aggregate(age ~ agegroup, d.cdm, max)
 
 d.cdm <- d.cdm %>%
   # clean up
-  select(subid, agegroup, game, trial.num, trial.type, q, resp) %>%
+  select(subid, age, agegroup, game, trial.num, trial.type, q, resp) %>%
   mutate(location = "museum", 
-         modality = "computer") %>%
+         modality = "computer", 
+         agegroup = factor(agegroup)) %>%
   ungroup() 
 n.cdm.final <- n.unique(d.cdm$subid)
 ns.cdm <- aggregate(subid ~ agegroup, d.cdm, n.unique)
 
-d <- rbind(d.turk, d.bing, d.cdm)
+d <- bind_rows(d.turk, d.bing, d.cdm)
 
 d$subid <- factor(d$subid)
 d$location <- factor(d$location)
 d$modality <- factor(d$modality)
-d$agegroup <- factor(d$agegroup)
+d$agegroup <- factor(d$agegroup, levels = c("adults", "4", "5", "6"))
 d$agegroup_modality <- factor(paste(d$agegroup, d$modality, sep = "_"), levels = c("4_iPad", "4_computer", "5_computer", "6_computer", "adults_computer"))
 d$trial.type <- factor(d$trial.type, levels = c("control", "inhib", "unambiguous", "implicature", "positive", "negative"))
+
+d$correct <- as.numeric(as.character(factor(d$resp, levels=c("upper","lower"), labels=c("1","0"))))==1
+d$trial.crit <- factor(d$trial.type %in% c("inhib","implicature","negative"), 
+                       levels = c(FALSE, TRUE), 
+                       labels = c("control","target"))
+d$game <- factor(d$game, levels=c("inhibition","implicature","negation"))
+
+d <- d %>%
+  mutate(agegroup2 = ifelse(agegroup == "adults", "adults", "kids"))
 
 ```
 
@@ -166,12 +188,6 @@ The iPad/bing sample ranged in age from `r min_age_4ipad` to `r max_age_4ipad`, 
 
 Proportion correct:
 ```{r propcorrect parvis, fig.width=5, fig.height=1.7}
-d$correct <- as.numeric(as.character(factor(d$resp, levels=c("upper","lower"), labels=c("1","0"))))==1
-d$trial.crit <- factor(d$trial.type %in% c("inhib","implicature","negative"), 
-                       levels = c(FALSE, TRUE), 
-                       labels = c("control","target"))
-d$game <- factor(d$game, levels=c("inhibition","implicature","negation"))
-
 ms <- d %>%
   filter(modality == "computer") %>%
   group_by(game, trial.crit, subid, agegroup) %>%
@@ -183,14 +199,59 @@ ms <- d %>%
 ms$agegroup <- factor(ms$agegroup, levels = c("4", "5", "6", "adults"), c("4", "5", "6", "Adults"))
 ms$game <- factor(ms$game, labels = c("Inhibition", "Implicature", "Negation"))
 
+ms$kid <- ms$agegroup != "Adults"
 qplot(data=ms, x=agegroup, y=m, color=trial.crit, 
       geom="point", position=position_dodge(.2)) + 
   geom_errorbar(aes(ymin=cil, ymax=cih), 
                 position=position_dodge(.2), width=0) + 
+  geom_line(aes(group = interaction(kid,trial.crit), col = trial.crit)) + 
   facet_grid( ~ game) +
   ylab("Prop. correct") + xlab("Age Group") +
   scale_fill_hue(name="Trial Type") +
   theme_bw()
+
+##Inhibition: 
+correct.inhib <- glmer(correct ~ trial.crit * agegroup2 + (trial.crit | subid), 
+                             data = filter(d, game == "inhibition",
+                                           modality == "computer"), 
+                             family = "binomial")
+summary(correct.inhib)
+
+correct.inhib.kids <- glmer(correct ~ trial.crit * age + (trial.crit | subid), 
+                             data = filter(d, game == "inhibition",
+                                           modality == "computer", 
+                                           agegroup != "adults"), 
+                             family = "binomial")
+summary(correct.inhib.kids)
+
+##Implicature:
+correct.imp <- glmer(correct ~ trial.crit * agegroup2 + (trial.crit | subid), 
+                             data = filter(d, game == "implicature",
+                                           modality == "computer"), 
+                             family = "binomial")
+summary(correct.imp)
+
+correct.imp.kids <- glmer(correct ~ trial.crit * age + (trial.crit | subid), 
+                             data = filter(d, game == "implicature",
+                                           modality == "computer", 
+                                           agegroup != "adults"), 
+                             family = "binomial")
+summary(correct.imp.kids)
+
+##Negation: 
+correct.neg <- glmer(correct ~ trial.crit * agegroup2 + (trial.crit | subid), 
+                             data = filter(d, game == "negation",
+                                           modality == "computer"), 
+                             family = "binomial")
+summary(correct.neg)
+
+correct.neg.kids <- glmer(correct ~ trial.crit * age + (trial.crit | subid), 
+                             data = filter(d, game == "negation",
+                                           modality == "computer", 
+                                           agegroup != "adults"), 
+                             family = "binomial")
+summary(correct.neg.kids)
+
 ```
 
 So kids are much less accurate than adults on target trials, especially in the implicature and negation games.  It looks like 4-year-olds are a little more accurate on the computer, and children show some improvement on the implicatures game across development but maybe not so much improvement across development on the negation game?
@@ -213,14 +274,58 @@ ms$agegroup <- factor(ms$agegroup, levels = c("4", "5", "6", "adults"), labels =
 ms$game <- factor(ms$game, labels = c("Inhibition", "Implicature", "Negation"))
 #kable(summary(xflips.exp1)$coefficients, digits = 3)
 
+ms$kid <- ms$agegroup != "Adults"
 qplot(data=ms, x=agegroup, y=m, color=trial.crit, 
       geom="point", position=position_dodge(.2)) + 
   geom_errorbar(aes(ymin=cil, ymax=cih), 
                 position=position_dodge(.2), width=0) + 
+  geom_line(aes(group = interaction(kid,trial.crit), col = trial.crit)) + 
   facet_grid( ~ game) +
   ylab("RT (s)") + xlab("Age Group") +
   scale_fill_hue(name="Trial Type") +
   theme_bw()
+
+##Inhibition: 
+q.inhib <- lmer(q ~ trial.crit * agegroup2 + (trial.crit | subid), 
+                             data = filter(d, game == "inhibition",
+                                           modality == "computer", 
+                                           correct == TRUE))
+summary(q.inhib)
+
+q.inhib.kids <- lmer(q ~ trial.crit * age + (trial.crit | subid), 
+                             data = filter(d, game == "inhibition",
+                                           modality == "computer", 
+                                           agegroup != "adults", 
+                                           correct == TRUE))
+summary(q.inhib.kids)
+
+##Implicature:
+q.imp <- lmer(q ~ trial.crit * agegroup2 + (trial.crit | subid), 
+                             data = filter(d, game == "implicature",
+                                           modality == "computer", 
+                                           correct == TRUE))
+summary(q.imp)
+
+q.imp.kids <- lmer(q ~ trial.crit * age + (trial.crit | subid), 
+                             data = filter(d, game == "implicature",
+                                           modality == "computer", 
+                                           agegroup != "adults", 
+                                           correct == TRUE))
+summary(q.imp.kids)
+
+##Negation: 
+q.neg <- lmer(q ~ trial.crit * agegroup2 + (trial.crit | subid), 
+                             data = filter(d, game == "negation",
+                                           modality == "computer", 
+                                           correct == TRUE))
+summary(q.neg)
+
+q.neg.kids <- lmer(q ~ trial.crit * age + (trial.crit | subid), 
+                             data = filter(d, game == "negation",
+                                           modality == "computer", 
+                                           agegroup != "adults", 
+                                           correct == TRUE))
+summary(q.neg.kids)
 ```
 
 So it looks like for both adults and children there is only an effect of trial type (e.g. control vs. target) on the inhibition game, where both adults and children were slower on the target trials.  4-year-olds were much faster on the iPad than on the computer, which is good to know!
