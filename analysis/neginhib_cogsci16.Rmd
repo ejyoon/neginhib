@@ -44,6 +44,7 @@ knitr::opts_chunk$set(cache=TRUE, warning=FALSE, message=FALSE)
 ```
 
 Some useful functions:
+
 ```{r functions}
 # number of unique subs
 n.unique <- function (x) {
@@ -61,7 +62,6 @@ ci.high <- function(x) {
 Load in data
 
 RT trimming:
-
 * Planned analysis: +/- 3SDs in log space
 * Post-hoc: also trim decisions < 200 ms from word onsent, > 15s (!) after offset, do this before planned outlier exclusion, doesn't change the results but makes things more reasonable. 
 
@@ -100,8 +100,6 @@ d.cdm <- d.cdm.raw %>%
   mutate(ntrials = n()) %>%
   filter(ntrials > 150) %>%
   ungroup() %>%
-  group_by(agegroup) %>% #Note: doing rt trimming within age group for this sample
-  # create resp and rt vars
   mutate(resp = factor(response, levels=c("Y","N"), labels=c("upper","lower")), 
          q = rt/1000) %>%
   # remove outlier RTs
@@ -152,6 +150,7 @@ We excluded `r n.turk.initial - n.turk.final` adult participants and `r n.cdm.in
 ## Proportion Correct
 
 Proportion correct:
+
 ```{r propcorrect, fig.width=5, fig.height=1.7}
 ms.acc <- d %>%
   group_by(game, trial.type, subid, agegroup) %>%
@@ -177,7 +176,8 @@ qplot(data = ms.acc, x = agegroup, y = m, color = trial.type,
   scale_color_hue(name = "Trial Type") +
   theme_bw()
 ```
-So kids are much less accurate than adults on target trials, especially in the implicature and negation games.  In general, both adults and kids have lower accuracy on target trials.  It looks children show some improvement on the implicatures game across development but maybe not so much improvement across development on the negation game?
+
+In general, both adults and kids have lower accuracy on target trials.  Kids are much less accurate than adults on target trials, especially in the implicature and negation games.  
 
 Do kids differ from adults in accuracy?
 
@@ -201,7 +201,8 @@ correct.neg <- glmer(correct ~ trial.type * agegroup2 + (trial.type | subid),
 kable(summary(correct.neg)$coefficients, digits = 3)
 ```
 
-Is there developmental change from 4 to 6 years?
+Is there developmental change in accuracy from 4 to 6 years?
+
 ```{r propcorrect_models2}
 ##Inhibition: 
 correct.inhib.kids <- glmer(correct ~ trial.type * age + (trial.type | subid), 
@@ -224,8 +225,6 @@ correct.neg.kids <- glmer(correct ~ trial.type * age + (trial.type | subid),
                              family = "binomial")
 kable(summary(correct.neg.kids)$coefficients, digits = 3)
 ```
-
-
 
 ## Reaction time
 
@@ -306,22 +305,13 @@ rt.neg.kids <- lmer(q ~ trial.type * age + (trial.type | subid),
 kable(summary(rt.neg.kids)$coefficients, digits = 3)
 ```
 
-So it looks like for both adults and children there is only an effect of trial type (e.g. control vs. target) on the inhibition game, where both adults and children were slower on the target trials.  Older children are faster than younger children, on all games.
-
 ##Individual Differences
 
 Is there any correlation between an individual's performance on one game vs. another game?
 
-```{r indif}
-ms.acc.kids <- d %>%
-  filter(agegroup2 == "kids") %>%
-  group_by(subid, game, trial.type) %>%
-  summarise(correct = mean(correct)) %>%
-  spread(trial.type, correct) %>%
-  mutate(sdiff = scale(target - control)) %>%
-  select(-control, -target) %>%
-  spread(game, sdiff)
+First let's look at individual differences in accuracy for adults: 
 
+```{r indif_acc_adults}
 ms.acc.adults <- d %>%
   filter(agegroup2 == "adults") %>%
   group_by(subid, game, trial.type) %>%
@@ -331,6 +321,66 @@ ms.acc.adults <- d %>%
   select(-control, -target) %>%
   spread(game, sdiff)
 
+ggpairs(data = ms.acc.adults, 
+        columns = 2:4, 
+        upper = list(continuous = "cor"),
+        lower = list(continuous = "smooth")) + 
+  theme_bw()
+
+cor.test(ms.acc.adults$inhibition, ms.acc.adults$implicature)
+cor.test(ms.acc.adults$inhibition, ms.acc.adults$negation)
+cor.test(ms.acc.adults$negation, ms.acc.adults$implicature)
+```
+
+What about kids' accuracy?
+
+```{r indif_acc_kids}
+ms.acc.kids <- d %>%
+  filter(agegroup2 == "kids") %>%
+  group_by(subid, game, trial.type) %>%
+  summarise(correct = mean(correct)) %>%
+  spread(trial.type, correct) %>%
+  mutate(sdiff = scale(target - control)) %>%
+  select(-control, -target) %>%
+  spread(game, sdiff)
+
+ggpairs(data = ms.acc.kids, 
+        columns = 2:4, 
+        upper = list(continuous = "cor"),
+        lower = list(continuous = "smooth")) + 
+  theme_bw()
+
+cor.test(ms.acc.kids$inhibition, ms.acc.kids$implicature)
+cor.test(ms.acc.kids$inhibition, ms.acc.kids$negation)
+cor.test(ms.acc.kids$negation, ms.acc.kids$implicature)
+```
+
+Now let's look at individual differences in reaction time for adults:
+
+```{r indif_rt_adults}
+ms.rt.adults <- d %>%
+  filter(correct == TRUE, agegroup2 == "adults") %>%
+  group_by(subid, game, trial.type) %>%
+  summarise(rt = mean(q)) %>%
+  spread(trial.type, rt) %>%
+  mutate(sdiff = scale(target - control)) %>%
+  select(-control, -target) %>%
+  spread(game, sdiff)
+
+ggpairs(data = ms.rt.adults, 
+        columns = 2:4, 
+        upper = list(continuous = "cor"),
+        lower = list(continuous = "smooth")) + 
+  theme_bw()
+
+cor.test(ms.rt.adults$inhibition, ms.rt.adults$implicature)
+cor.test(ms.rt.adults$inhibition, ms.rt.adults$negation)
+cor.test(ms.rt.adults$negation, ms.rt.adults$implicature)
+```
+
+What about kids' RT?
+
+```{r indif_rt_kids}
 ms.rt.kids <- d %>%
   filter(correct == TRUE, agegroup2 == "kids") %>%
   group_by(subid, game, trial.type) %>%
@@ -340,95 +390,31 @@ ms.rt.kids <- d %>%
   select(-control, -target) %>%
   spread(game, sdiff)
 
-ms.rt.adults <- d %>%
-  filter(correct == TRUE, agegroup2 == "adults") %>%
-  group_by(subid, game, trial.type) %>%
-  summarise(rt = mean(q)) %>%
-  spread(trial.type, rt) %>%
-  mutate(sdiff = scale(target - control)) %>%
-  select(-control, -target) %>%
-  spread(game, sdiff)
-```
-
-First let's look at individual differences in accuracy for adults: 
-
-```{r indif_acc_adults}
-ggpairs(data = ms.acc.adults, 
-        columns = 2:4, 
-        upper = list(continuous = "cor"),
-        lower = list(continuous = "smooth")) + 
-  theme_bw()
-
-inhibimp_accadults <- cor.test(ms.acc.adults$inhibition, ms.acc.adults$implicature)
-inhibneg_accadults <- cor.test(ms.acc.adults$inhibition, ms.acc.adults$negation)
-negimp_accadults <- cor.test(ms.acc.adults$negation, ms.acc.adults$implicature)
-```
-There is no significant correlation between inhibition and implicature accuracy (r = `r round(inhibimp_accadults$estimate, digits = 2)`, p = `r round(inhibimp_accadults$p.value, digits = 2)`) or inhibition and negation accuracy (r = `r round(inhibneg_accadults$estimate, digits = 2)`, p = `r round(inhibneg_accadults$p.value, digits = 2)`).  
-
-What about for kids' accuracy?
-
-```{r indif_acc_kids}
-ggpairs(data = ms.acc.kids, 
-        columns = 2:4, 
-        upper = list(continuous = "cor"),
-        lower = list(continuous = "smooth")) + 
-  theme_bw()
-
-inhibimp_acckids <- cor.test(ms.acc.kids$inhibition, ms.acc.kids$implicature)
-inhibneg_acckids <- cor.test(ms.acc.kids$inhibition, ms.acc.kids$negation)
-negimp_acckids <- cor.test(ms.acc.kids$negation, ms.acc.kids$implicature)
-```
-
-There is no significant correlation between inhibition and implicature accuracy (r = `r round(inhibimp_acckids$estimate, digits = 2)`, p = `r round(inhibimp_acckids$p.value, digits = 2)`) or inhibition and negation accuracy (r = `r round(inhibneg_acckids$estimate, digits = 2)`, p = `r round(inhibneg_acckids$p.value, digits = 2)`).  
-
-Now let's look at individual differences in reaction time for adults:
-
-```{r indif_rt_adults}
-ggpairs(data = ms.rt.adults, 
-        columns = 2:4, 
-        upper = list(continuous = "cor"),
-        lower = list(continuous = "smooth")) + 
-  theme_bw()
-
-inhibimp_rtadults <- cor.test(ms.rt.adults$inhibition, ms.rt.adults$implicature)
-inhibneg_rtadults <- cor.test(ms.rt.adults$inhibition, ms.rt.adults$negation)
-negimp_rtadults <- cor.test(ms.rt.adults$negation, ms.rt.adults$implicature)
-```
-
-There is no significant correlation between inhibition and implicature reaction time (r = `r round(inhibimp_rtadults$estimate, digits = 2)`, p = `r round(inhibimp_rtadults$p.value, digits = 2)`) or inhibition and negation reaction time (r = `r round(inhibneg_rtadults$estimate, digits = 2)`, p = `r round(inhibneg_rtadults$p.value, digits = 2)`).  
-
-There is a small marginally significant correlation between adults' RT on the negation game and the implicature game (r = `r round(negimp_rtadults$estimate, digits = 2)`, p = `r round(negimp_rtadults$p.value, digits = 2)`).  
-
-What about kids' RT?
-
-```{r indif_rt_kids}
 ggpairs(data = ms.rt.kids, 
         columns = 2:4, 
         upper = list(continuous = "cor"),
         lower = list(continuous = "smooth")) + 
   theme_bw()
 
-inhibimp_rtkids <- cor.test(ms.rt.kids$inhibition, ms.rt.kids$implicature)
-inhibneg_rtkids <- cor.test(ms.rt.kids$inhibition, ms.rt.kids$negation)
-negimp_rtkids <- cor.test(ms.rt.kids$negation, ms.rt.kids$implicature)
+cor.test(ms.rt.kids$inhibition, ms.rt.kids$implicature)
+cor.test(ms.rt.kids$inhibition, ms.rt.kids$negation)
+cor.test(ms.rt.kids$negation, ms.rt.kids$implicature)
 ```
-
-There is no significant correlation between inhibition and implicature reaction time (r = `r round(inhibimp_rtkids$estimate, digits = 2)`, p = `r round(inhibimp_rtkids$p.value, digits = 2)`) or inhibition and negation reaction time (r = `r round(inhibneg_rtkids$estimate, digits = 2)`, p = `r round(inhibneg_rtkids$p.value, digits = 2)`).  
 
 # Diffusion Analysis
 
 For the diffusion analysis, we estimated parameters separately for each trial type within each game.  Parameters are estimated within each subject and then we aggregate across subjects to get means & confidence intervals on the parameters.
 
 ## Plot densities
-Plots show density of RTs for correct (pink) and incorrect responses (green), for each trial type.  You can kind of see the speed-accuracy tradeoff in some of these plots, especially the inhibition trials.  
+Plots show density of RTs for correct and incorrect responses, for each trial type.  You can see the speed-accuracy tradeoff in some of these plots, especially the inhibition trials.  
 
 ```{r densities, fig.width=10, fig.height=8}
 #Make a bunch of plots:
 ggplot(d, aes(x = q)) + 
   geom_density(aes(group = resp, colour = resp, fill = resp), alpha = 0.3) +
   facet_grid(agegroup ~ game + trial.type, scales = "free") + 
-  scale_fill_hue(labels = c("incorrect", "correct")) +
-  scale_color_hue(labels = c("incorrect", "correct")) +
+  scale_fill_hue(labels = c("correct", "incorrect")) +
+  scale_color_hue(labels = c("correct", "incorrect")) +
   theme_bw()
 ```
 
@@ -479,8 +465,8 @@ This plot shows the mean parameter values & 95% C.I.s for each game/trial type.
 
 ```{r plotpars, fig.width=8, fig.height=6}
 sub.pars <- sub.pars %>%
-  mutate(Condition = ifelse(Trial.Type == "control" | Trial.Type == "positive" | Trial.Type == "unambiguous", "Control", "Target"),
-         Game = ifelse(Trial.Type == "control" | Trial.Type == "inhib", "inhibition", ifelse(Trial.Type == "positive" | Trial.Type == "negative", "negation", "implicature")))
+  mutate(Game = ifelse(Trial.Type == "control" | Trial.Type == "inhib", "inhibition", ifelse(Trial.Type == "positive" | Trial.Type == "negative", "negation", "implicature")), 
+         Trial.Type = ifelse(Trial.Type == "control" | Trial.Type == "positive" | Trial.Type == "unambiguous", "Control", "Target"))
 
 sub.pars$Separation <- as.numeric(sub.pars$Separation)
 sub.pars$Non.Decision <- as.numeric(sub.pars$Non.Decision)
@@ -503,13 +489,13 @@ sub.pars <- sub.pars %>%
 
 sub.pars.ms <- sub.pars %>%
   gather(Param, Value, Separation:Drift) %>%
-  group_by(Age, Condition, Game, Param) %>%
+  group_by(Age, Trial.Type, Game, Param) %>%
   summarise(M = mean(Value),
             cih = ci.high(Value),
             cil = ci.low(Value))
 sub.pars.ms$Game <- factor(sub.pars.ms$Game, levels = c("inhibition", "implicature", "negation"))
 
-qplot(data = filter(sub.pars.ms), x = Age, color = Condition,
+qplot(data = filter(sub.pars.ms), x = Age, color = Trial.Type,
       y = M, ymax=cih, ymin=cil, 
       geom = "pointrange", position = position_dodge(.25)) +
   facet_grid(Param ~ Game, scales = "free") +
@@ -554,19 +540,19 @@ for (a in 1:length(age)) {
                                         params$Separation_M, #point where drift ends
                                          params$Separation_M, #point where drift ends
                                         params$Separation_M),#point where drift ends
-                               Condition = rep(params$Condition, 4))
+                               Trial.Type = rep(params$Trial.Type, 4))
     
     nd_ribbon <- data.frame(xmin = params$Non.Decision_cil,
                             xmax = params$Non.Decision_cih,
                             ymin = rep(params$Bias_cil*params$Separation_cil, 2), 
                             ymax = rep(params$Bias_cih*params$Separation_cih, 2),
-                            Condition = params$Condition)
+                            Trial.Type = params$Trial.Type)
     
     sep_ribbon <- data.frame(xmin = rep(c(0), 2),
                              xmax = rep(x, 2),
                              ymin = params$Separation_cil,
                              ymax = params$Separation_cih,
-                             Condition = params$Condition)
+                             Trial.Type = params$Trial.Type)
     
     df <- data.frame()
     
@@ -576,33 +562,33 @@ for (a in 1:length(age)) {
                    aes(x = Non.Decision_M, 
                        xend = (Separation_M - yint_M) / Drift_M,
                        y = Bias_M * Separation_M, yend = Separation_M, 
-                       color = Condition)) + 
+                       color = Trial.Type)) + 
       geom_rect(data = nd_ribbon,
                 aes(xmin = xmin,
                     xmax = xmax,
                     ymin = ymin, 
                     ymax = ymax,
-                    fill = Condition), 
+                    fill = Trial.Type), 
                 alpha=0.2) +
       geom_ribbon(data = drift_ribbon, 
                   aes(x = xvals, 
                       ymin = ymin, 
                       ymax = ymax,
-                      fill = Condition), 
+                      fill = Trial.Type), 
                   alpha=0.2) +
       geom_rect(data = sep_ribbon, 
                 aes(xmin = xmin,
                     xmax = xmax,
                     ymin = ymin, 
                     ymax = ymax,
-                    fill = Condition), 
+                    fill = Trial.Type), 
                 alpha=0.2) +
       geom_hline(data = params, 
-                 aes(yintercept = Separation_M, color = Condition),
+                 aes(yintercept = Separation_M, color = Trial.Type),
                  linetype = "dashed") + 
       geom_hline(yintercept = 0, linetype = "dashed") + 
       geom_vline(data = params, 
-                 aes(xintercept = Non.Decision_M, color = Condition)) + 
+                 aes(xintercept = Non.Decision_M, color = Trial.Type)) + 
       scale_fill_discrete(guide = FALSE) +
       scale_color_discrete(guide = FALSE) +
       xlab("Time (seconds)") + ylab(paste("Boundary \n Separation")) #+ 
@@ -622,11 +608,13 @@ Pink = control trials and green = target trials (I removed the legend to make mo
 
 ## Parameter correlations
 
+Are individual participants' parameter values correlated across games?
+
 ```{r ddm_corrs}
 ms.sep.adults <- sub.pars %>%
   filter(Age == "adults") %>%
-  select(c(Separation, SubID, Condition, Game)) %>%
-  spread(Condition, Separation)  %>%
+  select(c(Separation, SubID, Trial.Type, Game)) %>%
+  spread(Trial.Type, Separation)  %>%
   mutate(sdiff = scale(Target - Control)) %>%
   select(-Control, -Target) %>%
   spread(Game, sdiff)
@@ -637,10 +625,14 @@ ggpairs(data = ms.sep.adults,
         lower = list(continuous = "smooth")) + 
   theme_bw()
 
+cor.test(ms.sep.adults$inhibition, ms.sep.adults$implicature)
+cor.test(ms.sep.adults$inhibition,ms.sep.adults$negation)
+cor.test(ms.sep.adults$negation, ms.sep.adults$implicature)
+
 ms.sep.kids <- sub.pars %>%
   filter(Age != "adults") %>%
-  select(c(Separation, SubID, Condition, Game)) %>%
-  spread(Condition, Separation) %>%
+  select(c(Separation, SubID, Trial.Type, Game)) %>%
+  spread(Trial.Type, Separation) %>%
   mutate(sdiff = scale(Target - Control)) %>%
   select(-Control, -Target) %>%
   spread(Game, sdiff)
@@ -651,10 +643,14 @@ ggpairs(data = ms.sep.kids,
         lower = list(continuous = "smooth")) + 
   theme_bw()
 
+cor.test(ms.sep.kids$inhibition, ms.sep.kids$implicature)
+cor.test(ms.sep.kids$inhibition,ms.sep.kids$negation)
+cor.test(ms.sep.kids$negation, ms.sep.kids$implicature)
+
 ms.nd.adults <- sub.pars %>%
   filter(Age == "adults") %>%
-  select(c(Non.Decision, SubID, Condition, Game)) %>%
-  spread(Condition, Non.Decision) %>%
+  select(c(Non.Decision, SubID, Trial.Type, Game)) %>%
+  spread(Trial.Type, Non.Decision) %>%
   mutate(sdiff = scale(Target - Control)) %>%
   select(-Control, -Target) %>%
   spread(Game, sdiff)
@@ -665,10 +661,14 @@ ggpairs(data = ms.nd.adults,
         lower = list(continuous = "smooth")) + 
   theme_bw()
 
+cor.test(ms.nd.adults$inhibition, ms.nd.adults$implicature)
+cor.test(ms.nd.adults$inhibition,ms.nd.adults$negation)
+cor.test(ms.nd.adults$negation, ms.nd.adults$implicature)
+
 ms.nd.kids <- sub.pars %>%
   filter(Age != "adults") %>%
-  select(c(Non.Decision, SubID, Condition, Game)) %>%
-  spread(Condition, Non.Decision) %>%
+  select(c(Non.Decision, SubID, Trial.Type, Game)) %>%
+  spread(Trial.Type, Non.Decision) %>%
   mutate(sdiff = scale(Target - Control)) %>%
   select(-Control, -Target) %>%
   spread(Game, sdiff)
@@ -679,10 +679,14 @@ ggpairs(data = ms.nd.kids,
         lower = list(continuous = "smooth")) + 
   theme_bw()
 
+cor.test(ms.nd.kids$inhibition, ms.nd.kids$implicature)
+cor.test(ms.nd.kids$inhibition,ms.nd.kids$negation)
+cor.test(ms.nd.kids$negation, ms.nd.kids$implicature)
+
 ms.bias.adults <- sub.pars %>%
   filter(Age == "adults") %>%
-  select(c(Bias, SubID, Condition, Game)) %>%
-  spread(Condition, Bias) %>%
+  select(c(Bias, SubID, Trial.Type, Game)) %>%
+  spread(Trial.Type, Bias) %>%
   mutate(sdiff = scale(Target - Control)) %>%
   select(-Control, -Target) %>%
   spread(Game, sdiff)
@@ -693,10 +697,14 @@ ggpairs(data = ms.bias.adults,
         lower = list(continuous = "smooth")) + 
   theme_bw()
 
+cor.test(ms.bias.adults$inhibition, ms.bias.adults$implicature)
+cor.test(ms.bias.adults$inhibition,ms.bias.adults$negation)
+cor.test(ms.bias.adults$negation, ms.bias.adults$implicature)
+
 ms.bias.kids <- sub.pars %>%
   filter(Age != "adults") %>%
-  select(c(Bias, SubID, Condition, Game)) %>%
-  spread(Condition, Bias) %>%
+  select(c(Bias, SubID, Trial.Type, Game)) %>%
+  spread(Trial.Type, Bias) %>%
   mutate(sdiff = scale(Target - Control)) %>%
   select(-Control, -Target) %>%
   spread(Game, sdiff)
@@ -707,10 +715,14 @@ ggpairs(data = ms.bias.kids,
         lower = list(continuous = "smooth")) + 
   theme_bw()
 
+cor.test(ms.bias.kids$inhibition, ms.bias.kids$implicature)
+cor.test(ms.bias.kids$inhibition,ms.bias.kids$negation)
+cor.test(ms.bias.kids$negation, ms.bias.kids$implicature)
+
 ms.drift.adults <- sub.pars %>%
   filter(Age == "adults") %>%
-  select(c(Drift, SubID, Condition, Game)) %>%
-  spread(Condition, Drift) %>%
+  select(c(Drift, SubID, Trial.Type, Game)) %>%
+  spread(Trial.Type, Drift) %>%
   mutate(sdiff = scale(Target - Control)) %>%
   select(-Control, -Target) %>%
   spread(Game, sdiff)
@@ -721,10 +733,14 @@ ggpairs(data = ms.drift.adults,
         lower = list(continuous = "smooth")) + 
   theme_bw()
 
+cor.test(ms.drift.adults$inhibition, ms.drift.adults$implicature)
+cor.test(ms.drift.adults$inhibition,ms.drift.adults$negation)
+cor.test(ms.drift.adults$negation, ms.drift.adults$implicature)
+
 ms.drift.kids <- sub.pars %>%
   filter(Age != "adults") %>%
-  select(c(Drift, SubID, Condition, Game)) %>%
-  spread(Condition, Drift) %>%
+  select(c(Drift, SubID, Trial.Type, Game)) %>%
+  spread(Trial.Type, Drift) %>%
   mutate(sdiff = scale(Target - Control)) %>%
   select(-Control, -Target) %>%
   spread(Game, sdiff)
@@ -734,108 +750,67 @@ ggpairs(data = ms.drift.kids,
         upper = list(continuous = "cor"),
         lower = list(continuous = "smooth")) + 
   theme_bw()
+
+cor.test(ms.drift.kids$inhibition, ms.drift.kids$implicature)
+cor.test(ms.drift.kids$inhibition,ms.drift.kids$negation)
+cor.test(ms.drift.kids$negation, ms.drift.kids$implicature)
 ```
 
 ## Adult data t-tests
+
+Some t-tests to compare parameter values across trial types for adults in different games. 
+
 ```{r adult_ttests}
 sub.pars$Age <- factor(sub.pars$Age, levels = c("adults", "4", "5", "6"))
-sub.pars$Condition <- factor(sub.pars$Condition)
+sub.pars$Trial.Type <- factor(sub.pars$Trial.Type)
 
 #adult t tests
 inhib.bias <- sub.pars %>%
   filter(Age == "adults", Game == "inhibition") %>%
-  select(Bias, SubID, Condition) %>%
-  spread(Condition, Bias)
+  select(Bias, SubID, Trial.Type) %>%
+  spread(Trial.Type, Bias)
 
 t.test(inhib.bias$Control, inhib.bias$Target, paired = T)
 
 inhib.nd <- sub.pars %>%
   filter(Age == "adults", Game == "inhibition") %>%
-  select(Non.Decision, SubID, Condition) %>%
-  spread(Condition, Non.Decision)
+  select(Non.Decision, SubID, Trial.Type) %>%
+  spread(Trial.Type, Non.Decision)
 
 t.test(inhib.nd$Control, inhib.nd$Target, paired = T)
 
 imp.sep <- sub.pars %>%
   filter(Age == "adults", Game == "implicature") %>%
-  select(Separation, SubID, Condition) %>%
-  spread(Condition, Separation)
+  select(Separation, SubID, Trial.Type) %>%
+  spread(Trial.Type, Separation)
 
 t.test(imp.sep$Control, imp.sep$Target, paired = T)
 
 imp.drift <- sub.pars %>%
   filter(Age == "adults", Game == "implicature") %>%
-  select(Drift, SubID, Condition) %>%
-  spread(Condition, Drift)
+  select(Drift, SubID, Trial.Type) %>%
+  spread(Trial.Type, Drift)
 
 t.test(imp.drift$Control, imp.drift$Target, paired = T)
 
 neg.drift <- sub.pars %>%
   filter(Age == "adults", Game == "negation") %>%
-  select(Drift, SubID, Condition) %>%
-  spread(Condition, Drift)
+  select(Drift, SubID, Trial.Type) %>%
+  spread(Trial.Type, Drift)
 
 t.test(neg.drift$Control, neg.drift$Target, paired = T)
 
 neg.nd <- sub.pars %>%
   filter(Age == "adults", Game == "negation") %>%
-  select(Non.Decision, SubID, Condition) %>%
-  spread(Condition, Non.Decision)
+  select(Non.Decision, SubID, Trial.Type) %>%
+  spread(Trial.Type, Non.Decision)
 
 t.test(neg.nd$Control, neg.nd$Target, paired = T)
 ```
 
-## Developmental Change across games
-
-```{r child_models}
-
-##Inhibition game
-inhib <- filter(sub.pars, Game == "inhibition")
-
-inhib.sep <- lm(Separation ~ Age * Condition, data = inhib)
-kable(summary(inhib.sep)$coefficients, digits = 3)
-
-inhib.nd <- lm(Non.Decision ~ Age * Condition, data = inhib)
-kable(summary(inhib.nd)$coefficients, digits = 3)
-
-inhib.bias <- lm(Bias ~ Age * Condition, data = inhib)
-kable(summary(inhib.bias)$coefficients, digits = 3)
-
-inhib.drift <- lm(Drift ~ Age * Condition, data = inhib)
-kable(summary(inhib.drift)$coefficients, digits = 3)
-
-##Implicature game
-imp <- filter(sub.pars, Game == "implicature")
-
-imp.sep <- lm(Separation ~ Age * Condition, data = imp)
-kable(summary(imp.sep)$coefficients, digits = 3)
-
-imp.nd <- lm(Non.Decision ~ Age * Condition, data = imp)
-kable(summary(imp.nd)$coefficients, digits = 3)
-
-imp.bias <- lm(Bias ~ Age * Condition, data = imp)
-kable(summary(imp.bias)$coefficients, digits = 3)
-
-imp.drift <- lm(Drift ~ Age * Condition, data = imp)
-kable(summary(imp.drift)$coefficients, digits = 3)
-
-##Negation game
-neg <- filter(sub.pars, Game == "negation")
-
-neg.sep <- lm(Separation ~ Age * Condition, data = neg)
-kable(summary(neg.sep)$coefficients, digits = 3)
-
-neg.nd <- lm(Non.Decision ~ Age * Condition , data = neg)
-kable(summary(neg.nd)$coefficients, digits = 3)
-
-neg.bias <- lm(Bias ~ Age * Condition, data = neg)
-kable(summary(neg.bias)$coefficients, digits = 3)
-
-neg.drift <- lm(Drift ~ Age * Condition, data = neg)
-kable(summary(neg.drift)$coefficients, digits = 3)
-```
-
 ## General Developmental Change
+
+Do children's parameter values change across development, regardless of game?
 
 ```{r generaldev_models}
 #Look at changes in paramaters in general across age: 
@@ -867,3 +842,56 @@ kable(summary(cont.bias.model)$coefficients, digits = 3)
 cont.drift.model <- lm(Drift ~ Age, data = sub.pars.cont)
 kable(summary(cont.drift.model)$coefficients, digits = 3)
 ```
+
+## Developmental Change across games
+
+Does children's development look different in different games?
+
+```{r child_models}
+
+##inhibition game
+inhib <- filter(sub.pars, Game == "inhibition")
+
+inhib.sep <- lm(Separation ~ Age * Trial.Type, data = inhib)
+kable(summary(inhib.sep)$coefficients, digits = 3)
+
+inhib.nd <- lm(Non.Decision ~ Age * Trial.Type, data = inhib)
+kable(summary(inhib.nd)$coefficients, digits = 3)
+
+inhib.bias <- lm(Bias ~ Age * Trial.Type, data = inhib)
+kable(summary(inhib.bias)$coefficients, digits = 3)
+
+inhib.drift <- lm(Drift ~ Age * Trial.Type, data = inhib)
+kable(summary(inhib.drift)$coefficients, digits = 3)
+
+##implicature game
+imp <- filter(sub.pars, Game == "implicature")
+
+imp.sep <- lm(Separation ~ Age * Trial.Type, data = imp)
+kable(summary(imp.sep)$coefficients, digits = 3)
+
+imp.nd <- lm(Non.Decision ~ Age * Trial.Type, data = imp)
+kable(summary(imp.nd)$coefficients, digits = 3)
+
+imp.bias <- lm(Bias ~ Age * Trial.Type, data = imp)
+kable(summary(imp.bias)$coefficients, digits = 3)
+
+imp.drift <- lm(Drift ~ Age * Trial.Type, data = imp)
+kable(summary(imp.drift)$coefficients, digits = 3)
+
+##negation game
+neg <- filter(sub.pars, Game == "negation")
+
+neg.sep <- lm(Separation ~ Age * Trial.Type, data = neg)
+kable(summary(neg.sep)$coefficients, digits = 3)
+
+neg.nd <- lm(Non.Decision ~ Age * Trial.Type , data = neg)
+kable(summary(neg.nd)$coefficients, digits = 3)
+
+neg.bias <- lm(Bias ~ Age * Trial.Type, data = neg)
+kable(summary(neg.bias)$coefficients, digits = 3)
+
+neg.drift <- lm(Drift ~ Age * Trial.Type, data = neg)
+kable(summary(neg.drift)$coefficients, digits = 3)
+```
+
