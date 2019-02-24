@@ -1,4 +1,8 @@
-
 analysis/neginhib.R
-
 analysis/neginhib.R
+hddm/
+model_traces/
+*.feather
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+*__pycache_*

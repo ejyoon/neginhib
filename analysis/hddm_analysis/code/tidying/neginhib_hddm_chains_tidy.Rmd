@@ -1,0 +1,169 @@
+---
+title: "Tidy HDDM Chains"
+output: html_document
+---
+
+### Set up
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Read in chains from both the within and between-subjects models.
+
+```{r}
+read_path <- "analysis/hddm_analysis/"
+library(here)
+source(here(read_path, "code/hddm_helpers.R"))
+d_mcmc <- read_csv(here(read_path, "data/model_traces/neginhib-adult-mcmc-bias.csv")) %>% rename(sample_number = X1)
+d_mcmc_pin_ndt <- read_csv(here(read_path, "data/model_traces/neginhib-adult-mcmc-pinned-ndt.csv")) %>% rename(sample_number = X1)
+#d_mcmc_between <- read_csv("../../data/model_traces/neginhib-adult-mcmc-group-between.csv") %>% rename(sample_number = X1)
+```
+
+Rename and clean up the column names.
+
+```{r}
+condition_names <- c("intercept", "implicature", "inhib", "negative", "positive", "unambiguous", "control")
+
+names(d_mcmc) <- names(d_mcmc) %>% 
+  purrr::map(process_condition_name, condition_names, df_type = "within") %>% 
+  as.character() %>% 
+  str_to_lower() %>% 
+  str_replace(pattern = "\\.", replacement = "_") %>% 
+  str_remove(pattern = "_trans")
+
+names(d_mcmc_pin_ndt) <- names(d_mcmc_pin_ndt) %>% 
+  purrr::map(process_condition_name, condition_names, df_type = "within") %>% 
+  as.character() %>% 
+  str_to_lower() %>% 
+  str_replace(pattern = "\\.", replacement = "_") %>% 
+  str_remove(pattern = "_trans")
+
+# names(d_mcmc_between) <- names(d_mcmc_between) %>% 
+#   purrr::map(process_condition_name, condition_names, df_type = "between") %>% 
+#   as.character() %>% 
+#   str_to_lower() %>% 
+#   str_replace(pattern = "\\.", replacement = "_")
+```
+
+### Tidy within-subjects model traces
+
+Gather parameters and create variable to track group vs. individual-level parameters. 
+
+```{r}
+d_mcmc_free_all_gat <- d_mcmc %>% gather(key = param_name, value = estimate, -sample_number) %>% 
+  mutate(param_level = ifelse(str_detect(param_name, "subj"), "individual", "group"),
+         model_name = "vary_all_params")
+
+# pinned ndt 
+d_mcmc_pndt_gat <- d_mcmc_pin_ndt %>% gather(key = param_name, value = estimate, -sample_number) %>% 
+  mutate(param_level = ifelse(str_detect(param_name, "subj"), "individual", "group"),
+         model_name = "pinned_ndt")
+```
+
+Join the model traces together
+
+```{r}
+d_mcmc_gat <- bind_rows(d_mcmc_free_all_gat, d_mcmc_pndt_gat)
+```
+
+Create separate data frames for group and individual ss chains and separate multiple information types that 
+are stored in the parameter name variable.
+
+```{r}
+# group-level 
+d_mcmc_group <- d_mcmc_gat %>% filter(param_level == "group")
+
+d_mcmc_group %<>%
+  mutate(param_name = case_when(
+    param_name == "t" ~ "t_group_map",
+    param_name == "t_std" ~ "t_group_std",
+    str_detect(param_name, "std") ~ param_name, 
+    TRUE ~ str_c(param_name, "map", sep = "_")
+    )) %>% 
+  separate(param_name, into = c("param_type", "condition", "statistic"), sep = "_") %>% 
+  mutate(subid = NA)
+
+# individual-level 
+d_mcmc_ss <- d_mcmc_gat %>% filter(param_level == "individual")
+
+d_mcmc_ss %<>% 
+  mutate(subid = str_extract(param_name, "_subj_[:digit:]+") %>% str_extract("[:digit:]+"),
+         param_name = str_remove(param_name, "_subj_[:digit:]+")) %>% 
+  separate(param_name, into = c("param_type", "condition"), sep = "_") %>% 
+  mutate(statistic = "map")
+```
+
+Pull everything back together and add some relevant variables.
+
+```{r}
+d_mcmc_final <- bind_rows(d_mcmc_group, d_mcmc_ss)
+
+d_mcmc_final %<>% 
+  mutate(model_type = "within-subjects",
+    game = case_when(
+    condition == "intercept" | condition == "negative" ~ "negation_game",
+    condition == "inhib" | condition == "control" ~ "inhibition_game",
+    condition == "implicature" | condition == "unambiguous" ~ "implicature_game",
+    TRUE ~ "NA"),
+  plot_order = case_when(
+    game == "negation_game" ~ 3,
+    game == "inhibition_game" ~ 1,
+    game == "implicature_game" ~ 2),
+  param_type = case_when(
+    param_type == "a" ~ "boundary",
+    param_type == "t" ~ "non-decision time",
+    param_type == "v" ~ "drift",
+    param_type == "z" ~ "bias",
+    TRUE ~ "NA"),
+  condition_clean = ifelse(condition == "intercept", "positive", condition))
+```
+
+Compute parameter values for each condition (i.e., not relative to intercept).
+
+```{r}
+intercept <- d_mcmc_final %>% 
+  filter(condition == "intercept", param_level == "group", statistic == "map") %>% 
+  select(sample_number, estimate, param_type, model_name) %>% 
+  rename(intercept_estimate = estimate)
+
+d_mcmc_final %<>% 
+  filter(statistic == "map") %>%
+  dplyr::left_join(., intercept) %>% 
+  mutate(group_param_estimate = ifelse(condition == "intercept", intercept_estimate, 
+                                              intercept_estimate + estimate))
+```
+
+### Tidy between subjects model traces
+
+```{r, eval = F}
+d_mcmc_between %<>% 
+  select(-a_std, -v_std, -t_std) %>% 
+  gather(key = param_name, value = estimate, -sample_number) %>% 
+  separate(param_name, into = c("param_type", "condition"), sep = "_") %>% 
+  mutate(model_type = "between-subjects",
+    param_level = "group",
+         game = case_when(
+           condition == "positive" | condition == "negative" ~ "negation_game",
+           condition == "inhib" | condition == "control" ~ "inhibition_game",
+           condition == "implicature" | condition == "unambiguous" ~ "implicature_game",
+           TRUE ~ "NA"),
+         plot_order = case_when(
+           game == "negation_game" ~ 3,
+           game == "inhibition_game" ~ 1,
+           game == "implicature_game" ~ 2),
+         param_type = case_when(
+           param_type == "a" ~ "boundary",
+           param_type == "t" ~ "non-decision time",
+           param_type == "v" ~ "drift",
+           TRUE ~ "NA"),
+         condition_clean = ifelse(condition == "intercept", "control", condition))
+```
+
+### Save tidy model traces
+
+```{r}
+#write_feather(d_mcmc_between, "../../data/model_traces/neginhib-mcmc-between-tidy.feather")
+write_feather(d_mcmc_final, here(read_path, "data/model_traces/neginhib-mcmc-within-tidy.feather"))
+```
+
