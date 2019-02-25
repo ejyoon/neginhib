@@ -1,0 +1,283 @@
+---
+title: "Replication of Nordmeyer, Yoon, & Frank, Cogsci 2016"
+author: "Ann E. Nordmeyer"
+output: 
+  html_document:
+    toc: true
+---
+
+Preregistration form here: https://osf.io/w8skr/register/5771ca429ad5a1020de2872e 
+
+# Setting up
+
+Load required Libraries
+
+```{r libraries}
+rm(list=ls())
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(magrittr)
+library(RWiener)
+library(knitr)
+library(bootstrap)
+library(gridExtra)
+library(effsize)
+library(lme4)
+library(GGally)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache=TRUE, warning=FALSE, message=FALSE)
+```
+
+Some useful functions:
+
+```{r functions}
+# number of unique subs
+n.unique <- function (x) {
+  length(unique(x))
+}
+
+# for bootstrapping 95% confidence intervals
+theta <- function(x,xdata) {mean(xdata[x])}
+ci.low <- function(x) {
+  quantile(bootstrap(1:length(x),1000,theta,x)$thetastar,.025)}
+ci.high <- function(x) {
+  quantile(bootstrap(1:length(x),1000,theta,x)$thetastar,.975)}
+```
+
+Load in data
+
+RT trimming:
+
+* Planned analysis: 
+-trim decisions < 500 ms from word onsent, > 10s after offset
+- +/- 3SDs in log space
+
+
+```{r loaddata}
+d.turk <- read.csv("../01_data/02_replication/long_data_neginhib_replication.csv") 
+n.turk.initial <- n.unique(d.turk$subid)
+
+d <- d.turk %>%
+  # remove anyone who played fewer than 300 trials (means they did not complete at least half of the third game) or over 408 trials (means they completed the task twice, because 408 is max number of trials -- this only happened for one participant and I'm not sure how they were able to do this, so I'm rejecting them)
+  mutate(subid = factor(subid)) %>%
+  group_by(subid) %>%
+  mutate(ntrials = n()) %>%
+  filter(ntrials > 300 & ntrials < 408) %>%
+  ungroup() %>%
+  # create resp and rt vars
+  mutate(resp = factor(response, levels=c("Y","N"), labels=c("upper","lower")), 
+         q = rt/1000) %>%
+  # remove outlier RTs
+  filter(rt > 200, 
+         rt < 15000) %>% 
+  filter(log(rt) < mean(log(rt)) + 3 * sd(log(rt)), 
+         log(rt) > mean(log(rt)) - 3 * sd(log(rt))) %>%
+  # clean up
+  select(subid, game, trial.num, trial.type, q, resp) %>%
+  mutate(agegroup = "adults") %>%
+  ungroup() 
+n.turk.final <- n.unique(d.turk$subid)
+
+d$subid <- factor(d$subid)
+
+d$trial.labels <- factor(d$trial.type, levels = c("control", "inhib", "unambiguous", "implicature", "positive", "negative"))
+
+d$correct <- as.numeric(as.character(factor(d$resp, 
+                                            levels=c("upper","lower"), 
+                                            labels=c("1","0"))))==1
+
+d$trial.type <- factor(d$trial.type %in% c("inhib","implicature","negative"), 
+                       levels = c(FALSE, TRUE), 
+                       labels = c("control","target"))
+
+d$game <- factor(d$game, levels=c("inhibition","implicature","negation"))
+
+```
+
+We excluded `r n.turk.initial - n.turk.final` participants for failing to complete at least half of the trials in each game.  This left a final sample of `r n.turk.final` participants.  
+
+# Bad participants
+
+I noticed something weird when I went to look at the correlations (some subs with NA means). Investigating here...
+```{r check}
+trials_before_RTtrim <- d.turk %>%
+  group_by(subid) %>%
+  summarize(ntrials = n())
+min(trials_before_RTtrim$ntrials)
+
+trials_after_RTtrim <- d %>%
+  group_by(subid) %>%
+  summarize(ntrials = n())
+min(trials_after_RTtrim$ntrials)
+
+#Some participants have a huge number of their trials removed due to the RT trim
+
+qplot(trials_after_RTtrim$ntrials, geom = "histogram")
+
+bad_participants <- trials_after_RTtrim %>%
+  filter(ntrials < 200)
+kable(bad_participants)
+#Four participants have fewer than 200 trials (an arbitrary cutoff I just chose after looking at the histogram) after the RT trim. Subject 11 only has NINE trials remaining after the RT trim. 
+#For comparison, I checked the original cogsci 2016 turk data and there were no participants (out of a total of 48) with fewer than 350 trials after the RT trim. 
+
+
+#Another weird thing: Really low accuracy for some subjects on certain trials
+#If you just look at overall subject accuracy, it doesn't look so bad: 
+correct <- d %>%
+  group_by(subid) %>%
+  summarise(m = mean(correct))
+min(correct$m) 
+
+qplot(correct$m, geom = "histogram")
+
+#But if you break down by game and trial type, some participants do VERY bad on certain games/trials: 
+correct <- d %>%
+  group_by(subid, game, trial.type) %>%
+  summarise(m = mean(correct))
+min(correct$m) 
+
+qplot(correct$m, geom = "histogram")
+
+more_bad_participants <- correct %>%
+  filter(m < .6)
+kable(more_bad_participants)
+#25 participants (out of 78) have an accuracy of below 60% on at least one trial type
+
+really_bad_participants <- correct %>%
+  filter(m < .25)
+kable(really_bad_participants)
+#6 of them have an accuracy of below 25% on at least one trial.type, some are close to zero accuracy. 
+#This is only happening in the negation and implicature games, and almost always happening on target trials
+#Subject 79 literally got every negation trial wrong (???????????)
+
+#For comparison, in the original cogsci 2016 turk data if you break it down by game & trial type, there were 8 participants who had an accuracy of below 60% on at least one trial type, only one of which was below 25%. 
+
+```
+Basically, we have some bad participants, some of whom have such bad RTs that almost all of their trials are removed after the RT trim, and others who have really low accuracy on some games/trial types. I don't know if we want to do something about this (remove some of these participants, based on post-hoc criteria?) or if we want to include these participants in the model. 
+
+Moving on to the planned analyses (including all those bad participants in the analyses below). 
+
+# Initial analysis
+
+## Proportion Correct
+
+Proportion correct:
+
+```{r propcorrect, fig.width=5, fig.height=1.7}
+ms.acc <- d %>%
+  group_by(game, trial.type, subid) %>%
+  summarise(m = mean(correct)) %>%
+  group_by(game, trial.type) %>%
+  summarise(cih = ci.high(m),
+            cil = ci.low(m),
+            m = mean(m)) 
+
+ms.acc$trial.type <- factor(ms.acc$trial.type, labels = c("Control", "Target"))
+ms.acc$game <- factor(ms.acc$game, labels = c("Inhibition", "Implicature", "Negation"))
+ 
+
+ggplot(data = ms.acc, aes(x = game, y = m, color = trial.type)) +
+  geom_point() + 
+  geom_errorbar(aes(ymin = cil, ymax = cih), 
+                position = position_dodge(.2), width = 0) + 
+  geom_line(aes(col = trial.type)) + 
+  ylab("Proportion correct") + xlab("Game") +
+  scale_color_hue(name = "Trial Type") +
+  theme_bw()
+```
+
+## Reaction time
+
+What about reaction time?  Here we just look at RTs on correct trials (outlier RTs were trimmed earlier when the data was loaded).
+
+```{r rt_adults, fig.width=5, fig.height=1.7}
+#Plot data
+ms.rt <- d %>%
+  filter(correct == TRUE) %>%
+  group_by(game, trial.type, subid) %>%
+  summarise(m = mean(q)) %>%
+  group_by(game, trial.type) %>%
+  summarise(cih = ci.high(m),
+            cil = ci.low(m),
+            m = mean(m)) 
+
+ms.rt$game <- factor(ms.rt$game, labels = c("Inhibition", "Implicature", "Negation"))
+ms.rt$trial.type <- factor(ms.rt$trial.type, labels = c("Control", "Target"))
+
+ggplot(data = ms.rt, aes(x = game, y = m, color = trial.type)) + 
+  geom_point(position = position_dodge(.2)) + 
+  geom_errorbar(aes(ymin = cil, ymax = cih), 
+                position = position_dodge(.2), width = 0) + 
+  geom_line(aes(col = trial.type)) + 
+  ylab("RT (s)") + xlab("Game") +
+  scale_color_hue(name = "Trial Type") +
+  theme_bw()
+                
+```
+
+
+##Individual Differences
+
+Is there any correlation between an individual's performance on one game vs. another game?
+
+First let's look at individual differences in accuracy for adults: 
+
+NOTE: In the cogsci paper, when we calculated the difference scores, we used 
+```{r eval=FALSE}
+mutate(sdiff = scale(target - control))
+``` 
+to calculate the difference scores. But for some reason I'm getting an error here where it produces all NaNs. I thought it was because of the bad participants with NAs, but I tried removing them and it still gives me this error. 
+
+If I remove scale()it works, so that's what I'm doing below, both for the accuracy ananlysis and the RT analysis below. Does anyone have thoughts on why this is happening? 
+
+```{r indif_acc_adults}
+ms.acc.adults <- d %>%
+  group_by(subid, game, trial.type) %>%
+  summarise(correct = mean(correct)) %>%
+  spread(trial.type, correct) %>%
+  #mutate(sdiff = scale(target - control)) %>%
+  mutate(sdiff = target - control) %>%
+  select(-control, -target) %>%
+  spread(game, sdiff)
+
+ggpairs(data = ms.acc.adults, 
+        columns = 2:4, 
+        upper = list(continuous = "cor"),
+        lower = list(continuous = "smooth")) + 
+  theme_bw()
+
+cor.test(ms.acc.adults$inhibition, ms.acc.adults$implicature)
+cor.test(ms.acc.adults$inhibition, ms.acc.adults$negation)
+cor.test(ms.acc.adults$negation, ms.acc.adults$implicature)
+```
+
+Individual differences in reaction time for adults:
+
+```{r indif_rt_adults}
+ms.rt.adults <- d %>%
+  filter(correct == TRUE) %>%
+  group_by(subid, game, trial.type) %>%
+  summarise(rt = mean(q)) %>%
+  spread(trial.type, rt) %>%
+  #mutate(sdiff = scale(target - control)) %>%
+  mutate(sdiff = target - control) %>%
+  select(-control, -target) %>%
+  spread(game, sdiff)
+
+ggpairs(data = ms.rt.adults, 
+        columns = 2:4, 
+        upper = list(continuous = "cor"),
+        lower = list(continuous = "smooth")) + 
+  theme_bw()
+
+cor.test(ms.rt.adults$inhibition, ms.rt.adults$implicature)
+cor.test(ms.rt.adults$inhibition, ms.rt.adults$negation)
+cor.test(ms.rt.adults$negation, ms.rt.adults$implicature)
+```
+
+
+
+
