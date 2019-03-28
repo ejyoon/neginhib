@@ -1,0 +1,56 @@
+---
+title: "Neginhib Replication HDDM Analysis"
+output: html_document
+---
+
+```{r chunk_options, echo = F}
+knitr::opts_chunk$set(warning=F, message=F, sanitize = T, 
+                      fig.width = 8, fig.asp = 0.7, out.width = "70%", 
+                      fig.align = "center", echo = T, cache = F)
+```
+
+## Setup
+
+```{r}
+read_path <- "02_analysis/02_scripts/hddm_analysis/"
+library(feather); library(here)
+source(here(read_path, "code/hddm_helpers.R"))
+
+# read data
+#d_mcmc <- read_feather(here(read_path, "data/model_traces/neginhib-mcmc-within-tidy.feather"))
+d <- read_feather(here(read_path, "data/tidy_chains/neginhib-mcmc-tidy-all.feather"))
+
+## remove burn in samples
+d %>% filter(!is.na(group_param_estimate), !is.na(estimate)) -> d
+```
+
+## Plot HDDM parameter estimates for the two studies
+
+```{r, fig.width=6, out.width="70%"}
+d %>% 
+  filter(param_level == "group", statistic == "map") %>% 
+  group_by(param_type, condition_clean, game, plot_order, experiment) %>% 
+  summarise(m = mean(group_param_estimate),
+            ci_lower = quantile(group_param_estimate, probs = 0.025),
+            ci_upper = quantile(group_param_estimate, probs = 0.975)) %>% 
+  ggplot(aes(x = fct_reorder(condition_clean, plot_order, .desc = F),
+             y = m, 
+             color = experiment)) +
+  geom_pointrange(aes(ymin = ci_lower, ymax = ci_upper), size = 1,
+                  position = position_dodge(width = .25)) +
+  facet_grid(game~param_type, scales = "free") +
+  coord_flip() +
+  labs(y = "parameter value", x = NULL) +
+  scale_color_ptol() +
+  theme(legend.position = "top",
+        text = element_text(size = 14))  
+```
+
+## Plot individual participant intercepts
+
+```{r, fig.width=10, fig.asp="0.95", out.width="80%"}
+params <- c("drift", "boundary", "bias")
+plots <- params %>% purrr::map(plot_hddm_ss, df = d %>% filter(experiment == "replication-filtered"))
+cowplot::plot_grid(plots[[1]], plots[[2]], plots[[3]], ncol = 3)
+```
+

@@ -5,25 +5,35 @@ output: html_document
 
 ### Set up
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-Read in chains from both the within and between-subjects models.
+This code converts a messy CSV containing the mcmc chains from the HDDM to a tidy data frame for analysis and visulaiztion. 
 
 ```{r}
-read_path <- "analysis/hddm_analysis/"
-library(here)
+read_path <- "02_analysis/02_scripts/hddm_analysis/"
+library(here); library(tidyverse)
 source(here(read_path, "code/hddm_helpers.R"))
-d_mcmc <- read_csv(here(read_path, "data/model_traces/neginhib-adult-mcmc-bias.csv")) %>% rename(sample_number = X1)
-d_mcmc_pin_ndt <- read_csv(here(read_path, "data/model_traces/neginhib-adult-mcmc-pinned-ndt.csv")) %>% rename(sample_number = X1)
-#d_mcmc_between <- read_csv("../../data/model_traces/neginhib-adult-mcmc-group-between.csv") %>% rename(sample_number = X1)
 ```
 
-Rename and clean up the column names.
+### Read in chains from any saved model files that have 'mcmc' in file name
 
 ```{r}
-condition_names <- c("intercept", "implicature", "inhib", "negative", "positive", "unambiguous", "control")
+files_to_read <- list.files(here(read_path, "data/raw_chains"), pattern = ".csv")
+
+read_fun <- function(filename, read_path) {
+  read_csv(file = here(read_path, "data/raw_chains", filename)) %>% 
+             mutate(model_name = str_remove(filename, ".csv") %>% 
+                      str_remove('neginhib-mcmc-'))
+}
+
+d_mcmc <- files_to_read %>% 
+  map_df(read_fun, read_path = read_path) %>% 
+  rename(sample_number = X1)
+```
+
+Rename and clean up the column names using our own helper function. 
+
+```{r}
+condition_names <- c("intercept", "implicature", "inhib", 
+                     "negative", "positive", "unambiguous", "control")
 
 names(d_mcmc) <- names(d_mcmc) %>% 
   purrr::map(process_condition_name, condition_names, df_type = "within") %>% 
@@ -31,50 +41,26 @@ names(d_mcmc) <- names(d_mcmc) %>%
   str_to_lower() %>% 
   str_replace(pattern = "\\.", replacement = "_") %>% 
   str_remove(pattern = "_trans")
-
-names(d_mcmc_pin_ndt) <- names(d_mcmc_pin_ndt) %>% 
-  purrr::map(process_condition_name, condition_names, df_type = "within") %>% 
-  as.character() %>% 
-  str_to_lower() %>% 
-  str_replace(pattern = "\\.", replacement = "_") %>% 
-  str_remove(pattern = "_trans")
-
-# names(d_mcmc_between) <- names(d_mcmc_between) %>% 
-#   purrr::map(process_condition_name, condition_names, df_type = "between") %>% 
-#   as.character() %>% 
-#   str_to_lower() %>% 
-#   str_replace(pattern = "\\.", replacement = "_")
 ```
 
-### Tidy within-subjects model traces
+### Tidy model traces
 
 Gather parameters and create variable to track group vs. individual-level parameters. 
 
 ```{r}
-d_mcmc_free_all_gat <- d_mcmc %>% gather(key = param_name, value = estimate, -sample_number) %>% 
-  mutate(param_level = ifelse(str_detect(param_name, "subj"), "individual", "group"),
-         model_name = "vary_all_params")
-
-# pinned ndt 
-d_mcmc_pndt_gat <- d_mcmc_pin_ndt %>% gather(key = param_name, value = estimate, -sample_number) %>% 
-  mutate(param_level = ifelse(str_detect(param_name, "subj"), "individual", "group"),
-         model_name = "pinned_ndt")
+d_mcmc_tidy <- d_mcmc %>% 
+  separate(col = model_name, into = c("model_type", "experiment"), sep = '-ndt-') %>% 
+  gather(key = param_name, value = estimate, -sample_number, -model_type, -experiment) %>% 
+  mutate(param_level = ifelse(str_detect(param_name, "subj"), "individual", "group")) 
 ```
 
-Join the model traces together
-
-```{r}
-d_mcmc_gat <- bind_rows(d_mcmc_free_all_gat, d_mcmc_pndt_gat)
-```
-
-Create separate data frames for group and individual ss chains and separate multiple information types that 
-are stored in the parameter name variable.
+Create separate data frames for group and individual ss chains and separate multiple information types that are stored in the parameter name variable.
 
 ```{r}
 # group-level 
-d_mcmc_group <- d_mcmc_gat %>% filter(param_level == "group")
+d_mcmc_group <- d_mcmc_tidy %>% filter(param_level == "group")
 
-d_mcmc_group %<>%
+d_mcmc_group %>%
   mutate(param_name = case_when(
     param_name == "t" ~ "t_group_map",
     param_name == "t_std" ~ "t_group_std",
@@ -82,16 +68,21 @@ d_mcmc_group %<>%
     TRUE ~ str_c(param_name, "map", sep = "_")
     )) %>% 
   separate(param_name, into = c("param_type", "condition", "statistic"), sep = "_") %>% 
-  mutate(subid = NA)
+  mutate(subid = NA) -> d_mcmc_group
 
 # individual-level 
-d_mcmc_ss <- d_mcmc_gat %>% filter(param_level == "individual")
+d_mcmc_ss <- d_mcmc_tidy %>% filter(param_level == "individual")
 
-d_mcmc_ss %<>% 
+## Note that this next step will produce warnings for the separate step since there
+## aren't conditions assoicated with the individual level intercepts for each 
+## hddm parameter (but this is OK! we only need this variable to bind the group
+## and individual estimates in the next chunk)
+
+d_mcmc_ss %>% 
   mutate(subid = str_extract(param_name, "_subj_[:digit:]+") %>% str_extract("[:digit:]+"),
          param_name = str_remove(param_name, "_subj_[:digit:]+")) %>% 
   separate(param_name, into = c("param_type", "condition"), sep = "_") %>% 
-  mutate(statistic = "map")
+  mutate(statistic = "map") -> d_mcmc_ss
 ```
 
 Pull everything back together and add some relevant variables.
@@ -99,7 +90,7 @@ Pull everything back together and add some relevant variables.
 ```{r}
 d_mcmc_final <- bind_rows(d_mcmc_group, d_mcmc_ss)
 
-d_mcmc_final %<>% 
+d_mcmc_final %>% 
   mutate(model_type = "within-subjects",
     game = case_when(
     condition == "intercept" | condition == "negative" ~ "negation_game",
@@ -116,7 +107,7 @@ d_mcmc_final %<>%
     param_type == "v" ~ "drift",
     param_type == "z" ~ "bias",
     TRUE ~ "NA"),
-  condition_clean = ifelse(condition == "intercept", "positive", condition))
+  condition_clean = ifelse(condition == "intercept", "positive", condition)) -> d_mcmc_final
 ```
 
 Compute parameter values for each condition (i.e., not relative to intercept).
@@ -124,46 +115,18 @@ Compute parameter values for each condition (i.e., not relative to intercept).
 ```{r}
 intercept <- d_mcmc_final %>% 
   filter(condition == "intercept", param_level == "group", statistic == "map") %>% 
-  select(sample_number, estimate, param_type, model_name) %>% 
+  select(sample_number, estimate, param_type, experiment) %>% 
   rename(intercept_estimate = estimate)
 
-d_mcmc_final %<>% 
+d_mcmc_final %>% 
   filter(statistic == "map") %>%
   dplyr::left_join(., intercept) %>% 
   mutate(group_param_estimate = ifelse(condition == "intercept", intercept_estimate, 
-                                              intercept_estimate + estimate))
-```
-
-### Tidy between subjects model traces
-
-```{r, eval = F}
-d_mcmc_between %<>% 
-  select(-a_std, -v_std, -t_std) %>% 
-  gather(key = param_name, value = estimate, -sample_number) %>% 
-  separate(param_name, into = c("param_type", "condition"), sep = "_") %>% 
-  mutate(model_type = "between-subjects",
-    param_level = "group",
-         game = case_when(
-           condition == "positive" | condition == "negative" ~ "negation_game",
-           condition == "inhib" | condition == "control" ~ "inhibition_game",
-           condition == "implicature" | condition == "unambiguous" ~ "implicature_game",
-           TRUE ~ "NA"),
-         plot_order = case_when(
-           game == "negation_game" ~ 3,
-           game == "inhibition_game" ~ 1,
-           game == "implicature_game" ~ 2),
-         param_type = case_when(
-           param_type == "a" ~ "boundary",
-           param_type == "t" ~ "non-decision time",
-           param_type == "v" ~ "drift",
-           TRUE ~ "NA"),
-         condition_clean = ifelse(condition == "intercept", "control", condition))
+                                              intercept_estimate + estimate)) -> d_mcmc_final
 ```
 
 ### Save tidy model traces
 
 ```{r}
-#write_feather(d_mcmc_between, "../../data/model_traces/neginhib-mcmc-between-tidy.feather")
-write_feather(d_mcmc_final, here(read_path, "data/model_traces/neginhib-mcmc-within-tidy.feather"))
+write_feather(d_mcmc_final, here(read_path,"data/tidy_chains/neginhib-mcmc-tidy-all.feather"))
 ```
-
