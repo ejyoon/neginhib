@@ -5,4 +5,5 @@
 
 #python fit_hddm.py neginhib_adult_hddm_e1.csv neginhib-mcmc-pinned-ndt-e1.csv 3000 300
 #python fit_hddm.py neginhib_adult_hddm_replication.csv neginhib-mcmc-pinned-ndt-replication.csv 3000 300
-python fit_hddm.py neginhib_adult_hddm_replication_filtered.csv neginhib-mcmc-pinned-ndt-replication-filtered.csv 3000 300
+#python fit_hddm.py neginhib_adult_hddm_replication_filtered.csv neginhib-mcmc-pinned-ndt-replication-filtered.csv 3000 300
+python fit_hddm.py neginhib_cdm_hddm_e1.csv neginhib-mcmc-cdm-kids-pinned-ndt.csv 3000 300
