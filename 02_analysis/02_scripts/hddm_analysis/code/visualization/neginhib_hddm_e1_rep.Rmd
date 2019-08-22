@@ -24,7 +24,7 @@ d <- read_feather(here(read_path, "data/tidy_chains/neginhib-mcmc-tidy-all.feath
 d %>% filter(!is.na(group_param_estimate), !is.na(estimate)) -> d
 ```
 
-## Plot HDDM parameter estimates for the two studies
+## Plot HDDM parameter estimates for the two adult studies
 
 ```{r, fig.width=6, out.width="70%"}
 d %>% 

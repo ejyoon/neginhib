@@ -20,8 +20,8 @@ files_to_read <- list.files(here(read_path, "data/raw_chains"), pattern = ".csv"
 
 read_fun <- function(filename, read_path) {
   read_csv(file = here(read_path, "data/raw_chains", filename)) %>% 
-             mutate(model_name = str_remove(filename, ".csv") %>% 
-                      str_remove('neginhib-mcmc-'))
+    mutate(model_name = str_remove(filename, ".csv") %>% 
+             str_remove('neginhib-mcmc-'))
 }
 
 d_mcmc <- files_to_read %>% 
@@ -41,6 +41,12 @@ names(d_mcmc) <- names(d_mcmc) %>%
   str_to_lower() %>% 
   str_replace(pattern = "\\.", replacement = "_") %>% 
   str_remove(pattern = "_trans")
+
+# one off processing of cdm model name
+d_mcmc <- d_mcmc %>% 
+  mutate(model_name = ifelse(model_name == "cdm-kids-pinned-ndt", 
+                             "pinned-ndt-cdm-kids",
+                             model_name))
 ```
 
 ### Tidy model traces
@@ -66,7 +72,7 @@ d_mcmc_group %>%
     param_name == "t_std" ~ "t_group_std",
     str_detect(param_name, "std") ~ param_name, 
     TRUE ~ str_c(param_name, "map", sep = "_")
-    )) %>% 
+  )) %>% 
   separate(param_name, into = c("param_type", "condition", "statistic"), sep = "_") %>% 
   mutate(subid = NA) -> d_mcmc_group
 
@@ -92,22 +98,22 @@ d_mcmc_final <- bind_rows(d_mcmc_group, d_mcmc_ss)
 
 d_mcmc_final %>% 
   mutate(model_type = "within-subjects",
-    game = case_when(
-    condition == "intercept" | condition == "negative" ~ "negation_game",
-    condition == "inhib" | condition == "control" ~ "inhibition_game",
-    condition == "implicature" | condition == "unambiguous" ~ "implicature_game",
-    TRUE ~ "NA"),
-  plot_order = case_when(
-    game == "negation_game" ~ 3,
-    game == "inhibition_game" ~ 1,
-    game == "implicature_game" ~ 2),
-  param_type = case_when(
-    param_type == "a" ~ "boundary",
-    param_type == "t" ~ "non-decision time",
-    param_type == "v" ~ "drift",
-    param_type == "z" ~ "bias",
-    TRUE ~ "NA"),
-  condition_clean = ifelse(condition == "intercept", "positive", condition)) -> d_mcmc_final
+         game = case_when(
+           condition == "intercept" | condition == "negative" ~ "negation_game",
+           condition == "inhib" | condition == "control" ~ "inhibition_game",
+           condition == "implicature" | condition == "unambiguous" ~ "implicature_game",
+           TRUE ~ "NA"),
+         plot_order = case_when(
+           game == "negation_game" ~ 3,
+           game == "inhibition_game" ~ 1,
+           game == "implicature_game" ~ 2),
+         param_type = case_when(
+           param_type == "a" ~ "boundary",
+           param_type == "t" ~ "non-decision time",
+           param_type == "v" ~ "drift",
+           param_type == "z" ~ "bias",
+           TRUE ~ "NA"),
+         condition_clean = ifelse(condition == "intercept", "positive", condition)) -> d_mcmc_final
 ```
 
 Compute parameter values for each condition (i.e., not relative to intercept).
@@ -122,7 +128,7 @@ d_mcmc_final %>%
   filter(statistic == "map") %>%
   dplyr::left_join(., intercept) %>% 
   mutate(group_param_estimate = ifelse(condition == "intercept", intercept_estimate, 
-                                              intercept_estimate + estimate)) -> d_mcmc_final
+                                       intercept_estimate + estimate)) -> d_mcmc_final
 ```
 
 ### Save tidy model traces
