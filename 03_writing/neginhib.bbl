@@ -1,6 +1,95 @@
 \begin{thebibliography}{}
 
 \bibitem [\protect \citeauthoryear {%
+Austin%
+, Theakston%
+, Lieven%
+\BCBL {}\ \BBA {} Tomasello%
+}{%
+Austin%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2014}}%
+}]{%
+austin2014}
+\APACinsertmetastar {%
+austin2014}%
+\begin{APACrefauthors}%
+Austin, K.%
+, Theakston, A.%
+, Lieven, E.%
+\BCBL {}\ \BBA {} Tomasello, M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2014}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Young children's understanding of denial.} {Young
+  children's understanding of denial.}{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Developmental psychology}{50}{8}{2061}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Beltr{\'a}n%
+, Liu%
+\BCBL {}\ \BBA {} de Vega%
+}{%
+Beltr{\'a}n%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2021}}%
+}]{%
+beltran2021}
+\APACinsertmetastar {%
+beltran2021}%
+\begin{APACrefauthors}%
+Beltr{\'a}n, D.%
+, Liu, B.%
+\BCBL {}\ \BBA {} de Vega, M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2021}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Inhibitory Mechanisms in the Processing of Negations: A
+  Neural Reuse Hypothesis} {Inhibitory mechanisms in the processing of
+  negations: A neural reuse hypothesis}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Journal of Psycholinguistic Research}{}{}{1--18}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Beltr{\'a}n%
+, Morera%
+, Garc{\'\i}a-Marco%
+\BCBL {}\ \BBA {} Vega%
+}{%
+Beltr{\'a}n%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2019}}%
+}]{%
+beltran2019}
+\APACinsertmetastar {%
+beltran2019}%
+\begin{APACrefauthors}%
+Beltr{\'a}n, D.%
+, Morera, Y.%
+, Garc{\'\i}a-Marco, E.%
+\BCBL {}\ \BBA {} Vega, M\BPBI d.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2019}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Brain inhibitory mechanisms are involved in the
+  processing of sentential negation, regardless of its content. Evidence from
+  EEG theta and beta rhythms} {Brain inhibitory mechanisms are involved in the
+  processing of sentential negation, regardless of its content. evidence from
+  eeg theta and beta rhythms}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Frontiers in psychology}{10}{}{1782}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
 Bloom%
 }{%
 Bloom%
@@ -21,6 +110,33 @@ Bloom, L.%
   {Language development: Form and function in emerging grammars.}
 \newblock
 \APACaddressPublisher{New York, NY}{MIT Research Monograph, No 59.}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Bott%
+\ \BBA {} Noveck%
+}{%
+Bott%
+\ \BBA {} Noveck%
+}{%
+{\protect \APACyear {2004}}%
+}]{%
+bott2004}
+\APACinsertmetastar {%
+bott2004}%
+\begin{APACrefauthors}%
+Bott, L.%
+\BCBT {}\ \BBA {} Noveck, I\BPBI A.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2004}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Some utterances are underinformative: The onset and time
+  course of scalar inferences} {Some utterances are underinformative: The onset
+  and time course of scalar inferences}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Journal of memory and language}{51}{3}{437--457}.
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -104,6 +220,63 @@ Davidson, M\BPBI C.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
+De~Neys%
+\ \BBA {} Schaeken%
+}{%
+De~Neys%
+\ \BBA {} Schaeken%
+}{%
+{\protect \APACyear {2007}}%
+}]{%
+de-neys2007}
+\APACinsertmetastar {%
+de-neys2007}%
+\begin{APACrefauthors}%
+De~Neys, W.%
+\BCBT {}\ \BBA {} Schaeken, W.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2007}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {When people are more logical under cognitive load: Dual
+  task impact on scalar implicature} {When people are more logical under
+  cognitive load: Dual task impact on scalar implicature}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Experimental psychology}{54}{2}{128--133}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+de Vega%
+\ \protect \BOthers {.}}{%
+de Vega%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2016}}%
+}]{%
+vega2016}
+\APACinsertmetastar {%
+vega2016}%
+\begin{APACrefauthors}%
+de Vega, M.%
+, Morera, Y.%
+, Le{\'o}n, I.%
+, Beltr{\'a}n, D.%
+, Casado, P.%
+\BCBL {}\ \BBA {} Mart{\'\i}n-Loeches, M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2016}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Sentential negation might share neurophysiological
+  mechanisms with action inhibition. Evidence from frontal theta rhythm}
+  {Sentential negation might share neurophysiological mechanisms with action
+  inhibition. evidence from frontal theta rhythm}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Journal of Neuroscience}{36}{22}{6002--6010}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
 Diamond%
 \ \BBA {} Taylor%
 }{%
@@ -130,6 +303,184 @@ Diamond, A.%
   say, not as {I} do''}.{\BBCQ}
 \newblock
 \APACjournalVolNumPages{Developmental Psychobiology}{29}{}{315--334}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Doyle%
+, Friesen%
+, Reimer%
+\BCBL {}\ \BBA {} Pexman%
+}{%
+Doyle%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2019}}%
+}]{%
+doyle2019}
+\APACinsertmetastar {%
+doyle2019}%
+\begin{APACrefauthors}%
+Doyle, A\BPBI W.%
+, Friesen, K.%
+, Reimer, S.%
+\BCBL {}\ \BBA {} Pexman, P\BPBI M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2019}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Grasping the alternative: Reaching and eyegaze reveal
+  children's processing of negation} {Grasping the alternative: Reaching and
+  eyegaze reveal children's processing of negation}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Frontiers in psychology}{10}{}{1227}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Dudschig%
+, Kaup%
+, Svaldi%
+\BCBL {}\ \BBA {} Gulewitsch%
+}{%
+Dudschig%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2021}}%
+}]{%
+dudschig2021}
+\APACinsertmetastar {%
+dudschig2021}%
+\begin{APACrefauthors}%
+Dudschig, C.%
+, Kaup, B.%
+, Svaldi, J.%
+\BCBL {}\ \BBA {} Gulewitsch, M\BPBI D.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2021}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Negation Processing in Children with ADHD: The Generic
+  Problem of Using Negation in Instructions} {Negation processing in children
+  with adhd: The generic problem of using negation in instructions}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Journal of Psycholinguistic Research}{}{}{1--12}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Feiman%
+, Mody%
+, Sanborn%
+\BCBL {}\ \BBA {} Carey%
+}{%
+Feiman%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2017}}%
+}]{%
+feiman2017}
+\APACinsertmetastar {%
+feiman2017}%
+\begin{APACrefauthors}%
+Feiman, R.%
+, Mody, S.%
+, Sanborn, S.%
+\BCBL {}\ \BBA {} Carey, S.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2017}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {What do you mean, no? Toddlers' comprehension of logical
+  ``no'' and ``not''} {What do you mean, no? toddlers' comprehension of logical
+  ``no'' and ``not''}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Language Learning and Development}{13}{4}{430--450}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Grodner%
+, Klein%
+, Carbary%
+\BCBL {}\ \BBA {} Tanenhaus%
+}{%
+Grodner%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2010}}%
+}]{%
+grodner2010}
+\APACinsertmetastar {%
+grodner2010}%
+\begin{APACrefauthors}%
+Grodner, D\BPBI J.%
+, Klein, N\BPBI M.%
+, Carbary, K\BPBI M.%
+\BCBL {}\ \BBA {} Tanenhaus, M\BPBI K.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2010}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {``Some,'' and possibly all, scalar inferences are not
+  delayed: Evidence for immediate pragmatic enrichment} {``some,'' and possibly
+  all, scalar inferences are not delayed: Evidence for immediate pragmatic
+  enrichment}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Cognition}{116}{1}{42--55}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Guasti%
+\ \protect \BOthers {.}}{%
+Guasti%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2005}}%
+}]{%
+guasti2005}
+\APACinsertmetastar {%
+guasti2005}%
+\begin{APACrefauthors}%
+Guasti, M.%
+, Chierchia, G.%
+, Crain, S.%
+, Foppolo, F.%
+, Gualmini, A.%
+\BCBL {}\ \BBA {} Meroni, L.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2005}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Why children and adults sometimes (but not always)
+  compute implicatures} {Why children and adults sometimes (but not always)
+  compute implicatures}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Language and cognitive processes}{20}{5}{667--696}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Horowitz%
+, Schneider%
+\BCBL {}\ \BBA {} Frank%
+}{%
+Horowitz%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2018}}%
+}]{%
+horowitz2018}
+\APACinsertmetastar {%
+horowitz2018}%
+\begin{APACrefauthors}%
+Horowitz, A\BPBI C.%
+, Schneider, R\BPBI M.%
+\BCBL {}\ \BBA {} Frank, M\BPBI C.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2018}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {The trouble with quantifiers: Exploring children's
+  deficits in scalar implicature} {The trouble with quantifiers: Exploring
+  children's deficits in scalar implicature}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Child development}{89}{6}{572--593}.
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -161,6 +512,63 @@ Huang, Y\BPBI T.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
+Kaup%
+, L{\"u}dtke%
+\BCBL {}\ \BBA {} Zwaan%
+}{%
+Kaup%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2006}}%
+}]{%
+kaup2006}
+\APACinsertmetastar {%
+kaup2006}%
+\begin{APACrefauthors}%
+Kaup, B.%
+, L{\"u}dtke, J.%
+\BCBL {}\ \BBA {} Zwaan, R\BPBI A.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2006}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Processing negated sentences with contradictory
+  predicates: Is a door that is not open mentally closed?} {Processing negated
+  sentences with contradictory predicates: Is a door that is not open mentally
+  closed?}{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Journal of Pragmatics}{38}{7}{1033--1050}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Kaup%
+\ \BBA {} Zwaan%
+}{%
+Kaup%
+\ \BBA {} Zwaan%
+}{%
+{\protect \APACyear {2003}}%
+}]{%
+kaup2003}
+\APACinsertmetastar {%
+kaup2003}%
+\begin{APACrefauthors}%
+Kaup, B.%
+\BCBT {}\ \BBA {} Zwaan, R\BPBI A.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2003}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Effects of negation and situational presence on the
+  accessibility of text information.} {Effects of negation and situational
+  presence on the accessibility of text information.}{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Journal of Experimental Psychology: Learning, Memory,
+  and Cognition}{29}{3}{439}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
 Kim%
 }{%
 Kim%
@@ -181,6 +589,38 @@ Kim, K.%
   negation.} {Development of the concept of truth-functional negation.}{\BBCQ}
 \newblock
 \APACjournalVolNumPages{Developmental Psychology}{21}{}{462}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Liu%
+\ \protect \BOthers {.}}{%
+Liu%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2020}}%
+}]{%
+liu2020}
+\APACinsertmetastar {%
+liu2020}%
+\begin{APACrefauthors}%
+Liu, B.%
+, Wang, H.%
+, Beltr{\'a}n, D.%
+, Gu, B.%
+, Liang, T.%
+, Wang, X.%
+\BCBL {}\ \BBA {} de Vega, M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2020}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {The generalizability of inhibition-related processes in
+  the comprehension of linguistic negation. ERP evidence from the Mandarin
+  language} {The generalizability of inhibition-related processes in the
+  comprehension of linguistic negation. erp evidence from the mandarin
+  language}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Language, Cognition and Neuroscience}{35}{7}{885--895}.
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -269,18 +709,46 @@ Miyake, A.%
 \APACrefYearMonthDay{2000}{}{}.
 \newblock
 {\BBOQ}\APACrefatitle {The unity and diversity of executive functions and their
-  contributions to complex frontal lobe tasks: A latent variable analysis}
-  {The unity and diversity of executive functions and their contributions to
-  complex frontal lobe tasks: A latent variable analysis}.{\BBCQ}
+  contributions to complex frontal lobe tasks: A latent variable analysis} {The
+  unity and diversity of executive functions and their contributions to complex
+  frontal lobe tasks: A latent variable analysis}.{\BBCQ}
 \newblock
 \APACjournalVolNumPages{Cognitive Psychology}{41}{}{49--100}.
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
-Nordmeyer%
+A.~Nordmeyer%
+, Yoon%
+\BCBL {}\ \BBA {} Frank%
+}{%
+A.~Nordmeyer%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2016}}%
+}]{%
+nordmeyer2016}
+\APACinsertmetastar {%
+nordmeyer2016}%
+\begin{APACrefauthors}%
+Nordmeyer, A.%
+, Yoon, E\BPBI J.%
+\BCBL {}\ \BBA {} Frank, M.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2016}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Distinguishing processing difficulties in inhibition,
+  implicature, and negation.} {Distinguishing processing difficulties in
+  inhibition, implicature, and negation.}{\BBCQ}
+\newblock
+\BIn{} \APACrefbtitle {CogSci.} {Cogsci.}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+A\BPBI E.~Nordmeyer%
 \ \BBA {} Frank%
 }{%
-Nordmeyer%
+A\BPBI E.~Nordmeyer%
 \ \BBA {} Frank%
 }{%
 {\protect \APACyear {2014}}%
@@ -306,10 +774,10 @@ Nordmeyer, A\BPBI E.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
-Nordmeyer%
+A\BPBI E.~Nordmeyer%
 \ \BBA {} Frank%
 }{%
-Nordmeyer%
+A\BPBI E.~Nordmeyer%
 \ \BBA {} Frank%
 }{%
 {\protect \APACyear {2014}}%
@@ -330,6 +798,33 @@ Nordmeyer, A\BPBI E.%
   negation}.{\BBCQ}
 \newblock
 \APACjournalVolNumPages{Journal of Memory and Language}{77}{}{25--39}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Noveck%
+\ \BBA {} Posada%
+}{%
+Noveck%
+\ \BBA {} Posada%
+}{%
+{\protect \APACyear {2003}}%
+}]{%
+noveck2003}
+\APACinsertmetastar {%
+noveck2003}%
+\begin{APACrefauthors}%
+Noveck, I\BPBI A.%
+\BCBT {}\ \BBA {} Posada, A.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2003}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Characterizing the time course of an implicature: An
+  evoked potentials study} {Characterizing the time course of an implicature:
+  An evoked potentials study}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Brain and language}{85}{2}{203--210}.
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -380,6 +875,36 @@ Pea, R.%
   three-year olds}.{\BBCQ}
 \newblock
 \APACjournalVolNumPages{Journal of Child Language}{9}{}{597-626}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Pouscoulous%
+, Noveck%
+, Politzer%
+\BCBL {}\ \BBA {} Bastide%
+}{%
+Pouscoulous%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2007}}%
+}]{%
+pouscoulous2007}
+\APACinsertmetastar {%
+pouscoulous2007}%
+\begin{APACrefauthors}%
+Pouscoulous, N.%
+, Noveck, I\BPBI A.%
+, Politzer, G.%
+\BCBL {}\ \BBA {} Bastide, A.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2007}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {A developmental investigation of processing costs in
+  implicature production} {A developmental investigation of processing costs in
+  implicature production}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Language acquisition}{14}{4}{347--375}.
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -437,6 +962,62 @@ Ratcliff, R.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
+Reuter%
+, Feiman%
+\BCBL {}\ \BBA {} Snedeker%
+}{%
+Reuter%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2018}}%
+}]{%
+reuter2018}
+\APACinsertmetastar {%
+reuter2018}%
+\begin{APACrefauthors}%
+Reuter, T.%
+, Feiman, R.%
+\BCBL {}\ \BBA {} Snedeker, J.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2018}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Getting to no: Pragmatic and semantic factors in two-and
+  three-year-olds' understanding of negation} {Getting to no: Pragmatic and
+  semantic factors in two-and three-year-olds' understanding of
+  negation}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Child development}{89}{4}{e364--e381}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Skordos%
+\ \BBA {} Papafragou%
+}{%
+Skordos%
+\ \BBA {} Papafragou%
+}{%
+{\protect \APACyear {2016}}%
+}]{%
+skordos2016}
+\APACinsertmetastar {%
+skordos2016}%
+\begin{APACrefauthors}%
+Skordos, D.%
+\BCBT {}\ \BBA {} Papafragou, A.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2016}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Children's derivation of scalar implicatures:
+  Alternatives and relevance} {Children's derivation of scalar implicatures:
+  Alternatives and relevance}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Cognition}{153}{}{6--18}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
 Stiller%
 , Goodman%
 \BCBL {}\ \BBA {} Frank%
@@ -461,6 +1042,61 @@ Stiller, A\BPBI J.%
   implicature in preschool children}.{\BBCQ}
 \newblock
 \APACjournalVolNumPages{Language Learning and Development}{11}{2}{176--190}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Tian%
+, Breheny%
+\BCBL {}\ \BBA {} Ferguson%
+}{%
+Tian%
+\ \protect \BOthers {.}}{%
+{\protect \APACyear {2010}}%
+}]{%
+tian2010}
+\APACinsertmetastar {%
+tian2010}%
+\begin{APACrefauthors}%
+Tian, Y.%
+, Breheny, R.%
+\BCBL {}\ \BBA {} Ferguson, H\BPBI J.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2010}{}{}.
+\newblock
+\APACrefbtitle {Why we simulate negated information: A dynamic pragmatic
+  account.} {Why we simulate negated information: A dynamic pragmatic account.}
+\newblock
+\APACaddressPublisher{}{SAGE Publications Sage UK: London, England}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Yoon%
+\ \BBA {} Frank%
+}{%
+Yoon%
+\ \BBA {} Frank%
+}{%
+{\protect \APACyear {2019}}%
+}]{%
+yoon2019}
+\APACinsertmetastar {%
+yoon2019}%
+\begin{APACrefauthors}%
+Yoon, E\BPBI J.%
+\BCBT {}\ \BBA {} Frank, M\BPBI C.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2019}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {The role of salience in young children's processing of
+  ad hoc implicatures} {The role of salience in young children's processing of
+  ad hoc implicatures}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Journal of experimental child
+  psychology}{186}{}{99--116}.
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
